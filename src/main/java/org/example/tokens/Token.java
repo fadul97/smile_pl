@@ -18,6 +18,9 @@ public class Token {
         this.tag = tag;
     }
 
+    public String getLexeme() { return lexeme; }
+    public void setLexeme(String lexeme) { this.lexeme = lexeme; }
+
     public Tag getTag() {
         return tag;
     }
@@ -31,7 +34,7 @@ public class Token {
     }
 
     public String toString() {
-        return "<" + tag.name() + ", " + lexeme + ">";
+        return "<" + tag.toString() + ", " + lexeme + ">";
     }
 
 }

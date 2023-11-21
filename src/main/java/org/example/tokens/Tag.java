@@ -1,6 +1,12 @@
 package org.example.tokens;
 
 public enum Tag {
+    BEGINNING,
+    END,
+    END_OF_EXPRESSION,
+    THREE_DOT,
+    ATTRIBUTION,
+    KEYWORD,
     ID,
     NUM,
     INTEGER,

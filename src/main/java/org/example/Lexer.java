@@ -22,8 +22,11 @@ public class Lexer {
         line = 1;
         peek = ' ';
         token_table = new HashMap<>();
+        token_table.put("TheBeginning", new Token(Tag.BEGINNING, "TheBeginning"));
+        token_table.put("TheEnd", new Token(Tag.END, "TheEnd"));
         token_table.put("true", new Id(Tag.TRUE, "true"));
         token_table.put("false", new Id(Tag.FALSE, "false"));
+        token_table.put("int", new Id(Tag.TYPE, "int"));
         // TODO: Adicionar keywords
 
         // DEBUG: Printa todas as keywords
@@ -31,6 +34,7 @@ public class Lexer {
         for (String key : token_table.keySet()) {
             System.out.println("Key: " + key);
         }
+        System.out.println("\n\n");
     }
 
     public void start() throws IOException {
@@ -73,20 +77,51 @@ public class Lexer {
 
             // Acumula numeros
             StringBuilder number = new StringBuilder();
+            int i = 0;
             do {
                 if (peek == '.') {
-                    // Ponto encontrado
-                    if (dot == false)
+                    // Primeiro ponto encontrado
+                    if (!dot) {
+                        i++;
                         dot = true;
-                        // Segundo ponto encontrado
+                    } else {
+                        // Segundo ponto encontrado - Final da expressao ou loop
+                        Token n = new Token(Tag.INTEGER, number.deleteCharAt(number.length() -1).toString());
+                        System.out.println(n.toString());
+
                         // TODO: Final da expressao (?)
-                    else
-                        break;
+                        i++;
+                        Token t = new Token(Tag.END_OF_EXPRESSION, "..");
+                        peek = (char) reader.read();
+                        if (peek == '.') {
+                            i++;
+                            // Guardar primeiro valor do loop for
+                            t = new Token(Tag.THREE_DOT, "...");
+                            token = t;
+                            System.out.println(token.toString());
+                            return token;
+                        } else {
+                            // TODO: Final da expressao
+                            token = t;
+                            System.out.println(token.toString());
+                            return token;
+                        }
+                    }
                 }
 
                 number.append(peek);
                 peek = (char) reader.read();
             } while (Character.isDigit(peek) || peek == '.');
+
+            if (dot) {
+                token = new Token(Tag.FLOATING, number.toString());
+                System.out.println(token.toString());
+                return token;
+            } else {
+                token = new Token(Tag.INTEGER, number.toString());
+                System.out.println(token.toString());
+                return token;
+            }
         }
 
         // Retorna palavras-chave e identificadores
@@ -98,10 +133,17 @@ public class Lexer {
                 peek = (char) reader.read();
             } while (Character.isAlphabetic(peek));
 
+            // DEBUG: Procurar token na tabela
+//            System.out.println("PROCURANDO POR: " + word.toString());
             Token pos = token_table.get(word.toString());
 
             // Se lexema ja esta na tabela
             if (pos != null) {
+                // TODO: Nao acha a keyword 'int' - GAMBIARRA
+//                System.out.println("LEXEME: " + pos.getLexeme());
+//                if (pos.getLexeme().equals("null")) {
+                    pos.setLexeme(word.toString());
+//                }
                 // Retorna o token da tabela
                 token = pos;
                 System.out.println(token.toString());
@@ -162,9 +204,16 @@ public class Lexer {
                 next = (char) reader.read();
                 if (next == '=') {
                     peek = (char) reader.read();
-                    token = new Token(Tag.LTE, "<=");
-                    System.out.println(token.toString());
-                    return token;
+                    // Atribuicao
+                    if (peek == '>') {
+                        token = new Token(Tag.ATTRIBUTION, "<=>");
+                        System.out.println(token.toString());
+                        return token;
+                    } else {
+                        token = new Token(Tag.LTE, "<=");
+                        System.out.println(token.toString());
+                        return token;
+                    }
                 } else {
                     // TODO: Unread letra
 //                        reader.u
@@ -198,9 +247,6 @@ public class Lexer {
         }
 
         // Retorna caracteres não alphanuméricos isolados: (, ), +, -, etc.
-        token = new Token(peek);
-        peek = ' ';
-        System.out.println(token.toString());
         return token;
     }
 
