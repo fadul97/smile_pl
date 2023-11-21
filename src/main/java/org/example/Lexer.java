@@ -1,7 +1,5 @@
 package org.example;
 
-import org.example.tokens.Id;
-import org.example.tokens.Num;
 import org.example.tokens.Tag;
 import org.example.tokens.Token;
 
@@ -24,9 +22,14 @@ public class Lexer {
         token_table = new HashMap<>();
         token_table.put("TheBeginning", new Token(Tag.BEGINNING, "TheBeginning"));
         token_table.put("TheEnd", new Token(Tag.END, "TheEnd"));
-        token_table.put("true", new Id(Tag.TRUE, "true"));
-        token_table.put("false", new Id(Tag.FALSE, "false"));
-        token_table.put("int", new Id(Tag.TYPE, "int"));
+        token_table.put("true", new Token(Tag.TRUE, "true"));
+        token_table.put("false", new Token(Tag.FALSE, "false"));
+        token_table.put("int", new Token(Tag.TYPE, "int"));
+        token_table.put("for", new Token(Tag.FOR, "for"));
+        token_table.put("go", new Token(Tag.GO, "go"));
+        token_table.put("while", new Token(Tag.WHILE, "while"));
+        token_table.put("if", new Token(Tag.IF, "if"));
+        token_table.put("scenario", new Token(Tag.SCENARIO, "scenario"));
         // TODO: Adicionar keywords
 
         // DEBUG: Printa todas as keywords
@@ -41,15 +44,13 @@ public class Lexer {
         try {
             mainFile = new File("main.sml");
 
-            // Read the file using a scanner
-            Scanner myReader = new Scanner(mainFile);
-
             reader = new BufferedReader(
                     new InputStreamReader(
                             new FileInputStream(mainFile),
                             StandardCharsets.UTF_8));
             int character;
             while ((character = reader.read()) != -1) scan((char) character);
+
         } catch (FileNotFoundException e) {
             System.out.println("Arquivo nao encontrado.");
             e.printStackTrace();
@@ -134,16 +135,10 @@ public class Lexer {
             } while (Character.isAlphabetic(peek));
 
             // DEBUG: Procurar token na tabela
-//            System.out.println("PROCURANDO POR: " + word.toString());
             Token pos = token_table.get(word.toString());
 
             // Se lexema ja esta na tabela
             if (pos != null) {
-                // TODO: Nao acha a keyword 'int' - GAMBIARRA
-//                System.out.println("LEXEME: " + pos.getLexeme());
-//                if (pos.getLexeme().equals("null")) {
-                    pos.setLexeme(word.toString());
-//                }
                 // Retorna o token da tabela
                 token = pos;
                 System.out.println(token.toString());
@@ -248,171 +243,5 @@ public class Lexer {
 
         // Retorna caracteres não alphanuméricos isolados: (, ), +, -, etc.
         return token;
-    }
-
-    Token scanOld() throws IOException {
-        // Ignora espacos em branco, tabs e novas linhas
-        while(Character.isWhitespace(peek)) {
-            if(peek == '\n') line +=1 ;
-            peek = (char) System.in.read();
-        }
-
-        // Retorna numeros
-        if (Character.isDigit(peek)) {
-            int v = 0;
-
-            do {
-                // Converte caracter 'n' para digito numero n
-                int n = peek - '0';
-                v = 10 * v + n;
-                peek = (char) System.in.read();
-            } while (Character.isDigit(peek));
-
-            // DEBUG
-            System.out.println("<NUM, " + v + ">");
-
-            return new Num(v);
-        }
-
-        // Retorna palavas e identificadores
-        if (Character.isAlphabetic(peek)) {
-            StringBuilder word = new StringBuilder();
-
-            // Constroi a palavra
-            do {
-                word.append(peek);
-                peek = (char) System.in.read();
-            } while (Character.isAlphabetic(peek));
-
-//            System.out.println("Palavra encontrada: " + word.toString());
-
-            // FIXME: Arrumar como os Tokens sao encontrado
-            Token pos = token_table.get(word.toString());
-            // Se pos ja estiver na tabela
-            if (pos != null) {
-//                System.out.println("Palavra encontrada na tabela!");
-
-                // DEBUG: exibe token reconhecido
-//                switch (pos.getTag()) {
-//                    case TRUE:
-////                        System.out.println(pos.getTokenName());
-//                        System.out.println("<TRUE, " + pos.getName() + ">");
-//                        break;
-//                    case FALSE:
-//                        System.out.println("<TRUE, " + pos.getName() + ">");
-//                        break;
-//                    default:
-//                        System.out.println("<ID, " + pos.getName() + ">");
-//                        break;
-//                }
-
-                // Retorna token
-                return pos;
-            }
-
-            // Se lexema nao estiver na tabela, insere
-            Id new_id = new Id(Tag.ID, word.toString());
-            token_table.put(word.toString(), new_id);
-
-            // DEBUG: exibe token reconhecido
-            System.out.println(new_id.getTokenName());
-
-            // Retorna token
-            return new_id;
-        }
-
-        // Operadores e caracteres nao alphanumericos isolados
-        Token t = new Token(Tag.UNKNOWN, "UNKOWN");
-
-        // DEBUG: exibe token para o caractere
-//        System.out.println(t.getUnknownToken(peek));
-
-        peek = ' ';
-
-        System.out.println();
-        return t;
-    }
-
-    void read() {
-        try {
-            mainFile = new File("main.sml");
-
-            // Read the file using a scanner
-            Scanner myReader = new Scanner(mainFile);
-
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(
-                            new FileInputStream(mainFile),
-                            StandardCharsets.UTF_8));
-
-            StringBuilder word = new StringBuilder();
-
-            boolean isOneDot = false;
-            boolean isTwoDots = false;
-            boolean isThreeDots = false;
-
-            int character;
-            char nextCharacter;
-            while ((character = reader.read()) != -1) {
-                // Read character
-                char c = (char) character;
-
-                // Is white space?
-                if (Character.isWhitespace(c)) {
-                    if(word.length() > 0) {
-                        if (containsLineBreak(word.toString())) {
-                            word = new StringBuilder(word.toString().replace("\n", "").replace("\r", ""));
-                        }
-                        if(!containsEmptySpace(word.toString()) && !containsLineBreak(word.toString()) && word.length() > 0) {
-                            System.out.println("Token: " + word);
-                            word.setLength(0);
-                        }
-                    }
-                    // Is it a dot?
-                } else if (c == '.') {
-                    int i = 0;
-                    if (!containsLineBreak(word.toString())) {
-                        System.out.println("Token: " + word);
-                        word.setLength(0);
-                    }
-
-                    while (c == '.') {
-                        i++;
-                        character = reader.read();
-                        c = (char) character;
-                    }
-                    word.append(c);
-
-                    if (i == 2) {
-                        System.out.println("Token: ..");
-                    } else if (i == 3) {
-                        System.out.println("Token: ...");
-                    } else {
-                        System.out.println("ERRO: Muitos pontos");
-                    }
-                } else {
-                    word.append(c);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("Arquivo nao encontrado.");
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("Erro na funcao reader.read().");
-            e.printStackTrace();
-        }
-    }
-
-    // Helper method to check for line break characters
-    private static boolean isLineBreak(char ch) {
-        return ch == '\n' || ch == '\r';
-    }
-
-    private static boolean containsEmptySpace(String str) {
-        return str.contains(" ");
-    }
-
-    private static boolean containsLineBreak(String str) {
-        return str.contains("\n") || str.contains("\r");
     }
 }
