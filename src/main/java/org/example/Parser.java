@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.tokens.Tag;
 import org.example.tokens.Token;
 
 import java.io.IOException;
@@ -10,13 +11,13 @@ public class Parser {
 
     public Parser() throws IOException {
         scanner = new Lexer();
-        scanner.scan();
+        scanner.scan(' ');
     }
 
     public void start() {
         expr();
 
-        if (lookahead.getTag() != NodeType.EOF) {
+        if (lookahead.getTag() != Tag.EOF) {
             StringBuilder word;
             String s = new String("Simbolo \'" + lookahead.toString() + "\' invalido");
             throw new RuntimeException();
@@ -34,9 +35,9 @@ public class Parser {
 
     }
 
-    private boolean match(NodeType tag) throws IOException {
+    private boolean match(Tag tag) throws IOException {
         if(tag == lookahead.getTag()) {
-            lookahead = scanner.scan();
+            lookahead = scanner.scan(' ');
             return true;
         }
 

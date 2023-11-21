@@ -3,15 +3,26 @@ package org.example.tokens;
 import org.example.NodeType;
 
 public class Token {
-    NodeType tag;
-    public Token(NodeType tag) {
+    Tag tag;
+    String lexeme;
+    public Token(Tag tag, String lexeme) {
+        this.tag = tag;
+        this.lexeme = lexeme;
+    }
+    public Token(char ch) {
+        this.tag = Tag.UNKNOWN;
+        this.lexeme = String.valueOf(ch);
+    }
+
+    public Token(Tag tag) {
         this.tag = tag;
     }
-    public NodeType getTag() {
+
+    public Tag getTag() {
         return tag;
     }
 
-    public void setTag(NodeType tag) {
+    public void setTag(Tag tag) {
         this.tag = tag;
     }
 
@@ -19,7 +30,8 @@ public class Token {
         return tag.name();
     }
 
-    public String getUnknownToken(char c) {
-        return "<" + tag.name() + ", " + c + ">";
+    public String toString() {
+        return "<" + tag.name() + ", " + lexeme + ">";
     }
+
 }

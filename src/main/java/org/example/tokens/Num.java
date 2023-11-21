@@ -5,7 +5,7 @@ import org.example.NodeType;
 public class Num extends Token {
     private int value;
     public Num(int v) {
-        super(NodeType.NUM);
+        super(Tag.NUM);
         value = v;
     }
 

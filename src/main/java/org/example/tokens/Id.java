@@ -5,13 +5,13 @@ import org.example.NodeType;
 public class Id extends Token {
     private String name;
     public Id() {
-        super(NodeType.ID);
+        super(Tag.ID);
     }
     public Id(String s) {
-        super(NodeType.ID);
+        super(Tag.ID);
         name = s;
     }
-    public Id(NodeType t, String s) {
+    public Id(Tag t, String s) {
         super(t);
         name = s;
     }
