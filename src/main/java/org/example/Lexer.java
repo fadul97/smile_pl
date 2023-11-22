@@ -15,11 +15,13 @@ public class Lexer {
     private File mainFile;
     BufferedReader reader;
     private Token token;
+    private StringBuilder dotsBuilder;
 
     public Lexer() {
         line = 1;
         peek = ' ';
         token_table = new HashMap<>();
+        dotsBuilder = new StringBuilder();
         token_table.put("TheBeginning", new Token(Tag.BEGINNING, "TheBeginning"));
         token_table.put("TheEnd", new Token(Tag.END, "TheEnd"));
         token_table.put("true", new Token(Tag.TRUE, "true"));
@@ -30,6 +32,9 @@ public class Lexer {
         token_table.put("while", new Token(Tag.WHILE, "while"));
         token_table.put("if", new Token(Tag.IF, "if"));
         token_table.put("scenario", new Token(Tag.SCENARIO, "scenario"));
+        token_table.put("..", new Token(Tag.END_OF_EXPRESSION, ".."));
+        token_table.put("...", new Token(Tag.THREE_DOT, "..."));
+        token_table.put("||", new Token(Tag.OR, "||"));
         // TODO: Adicionar keywords
 
         // DEBUG: Printa todas as keywords
@@ -60,103 +65,78 @@ public class Lexer {
         }
     }
 
-    Token scan(char ch) throws IOException {
-        peek = ch;
+    private void ignoreWhiteSpace() throws IOException {
+        if (peek == '\n') line += 1;
+        peek = (char) reader.read();
+    }
 
-        // Ignora espaços em branco, tabulações e novas linhas
-        while (Character.isWhitespace(peek)) {
-            if (peek == '\n') line += 1;
-            peek = (char) reader.read();
-        }
+    private Token readNumbers() throws IOException {
+        // Ponto-flutuante não foi encontrado
+        boolean dot = false;
 
-        // TODO: Ignorar comentários
-
-        // Retorna números
-        if (Character.isDigit(peek)) {
-            // Ponto-flutuante não foi encontrado
-            boolean dot = false;
-
-            // Acumula numeros
-            StringBuilder number = new StringBuilder();
-            int i = 0;
-            do {
-                if (peek == '.') {
-                    // Primeiro ponto encontrado
-                    if (!dot) {
-                        i++;
-                        dot = true;
-                    } else {
-                        // Segundo ponto encontrado - Final da expressao ou loop
-                        Token n = new Token(Tag.INTEGER, number.deleteCharAt(number.length() -1).toString());
-                        System.out.println(n.toString());
-
-                        // TODO: Final da expressao (?)
-                        i++;
-                        Token t = new Token(Tag.END_OF_EXPRESSION, "..");
-                        peek = (char) reader.read();
-                        if (peek == '.') {
-                            i++;
-                            // Guardar primeiro valor do loop for
-                            t = new Token(Tag.THREE_DOT, "...");
-                            token = t;
-                            System.out.println(token.toString());
-                            return token;
-                        } else {
-                            // TODO: Final da expressao
-                            token = t;
-                            System.out.println(token.toString());
-                            return token;
-                        }
-                    }
+        // Acumula numeros
+        StringBuilder number = new StringBuilder();
+        do {
+            if (peek == '.') {
+                // Primeiro ponto encontrado
+                if (!dot) {
+                    dot = true;
+                } else {
+                    // Segundo ponto encontrado - Final da expressao, loop ou erro
+//                    System.out.println("[IMPORTANTE] Segundo ponto");
+                    dot = false;
+                    dotsBuilder.append(number.charAt(number.length() - 1));
+                    number.deleteCharAt(number.length() - 1);
+                    break;
                 }
-
-                number.append(peek);
-                peek = (char) reader.read();
-            } while (Character.isDigit(peek) || peek == '.');
-
-            if (dot) {
-                token = new Token(Tag.FLOATING, number.toString());
-                System.out.println(token.toString());
-                return token;
-            } else {
-                token = new Token(Tag.INTEGER, number.toString());
-                System.out.println(token.toString());
-                return token;
             }
+
+            number.append(peek);
+            peek = (char) reader.read();
+        } while (Character.isDigit(peek) || peek == '.');
+
+
+        if (dot) {
+            token = new Token(Tag.FLOATING, number.toString());
+            System.out.println(token.toString());
+            return token;
+        } else {
+            token = new Token(Tag.INTEGER, number.toString());
+            System.out.println(token.toString());
+            return token;
         }
+    }
 
-        // Retorna palavras-chave e identificadores
-        while (Character.isAlphabetic(peek)) {
-            StringBuilder word = new StringBuilder();
+    private Token readWords() throws IOException {
+        StringBuilder word = new StringBuilder();
 
-            do {
-                word.append(peek);
-                peek = (char) reader.read();
-            } while (Character.isAlphabetic(peek));
+        do {
+            word.append(peek);
+            peek = (char) reader.read();
+        } while (Character.isAlphabetic(peek));
 
-            // DEBUG: Procurar token na tabela
-            Token pos = token_table.get(word.toString());
+        // DEBUG: Procurar token na tabela
+        Token pos = token_table.get(word.toString());
 
-            // Se lexema ja esta na tabela
-            if (pos != null) {
-                // Retorna o token da tabela
-                token = pos;
-                System.out.println(token.toString());
-                return token;
-            }
-
-            // Se o lexema ainda não está na tabela
-            Token t = new Token(Tag.ID, word.toString());
-            token_table.put(word.toString(), t);
-
-            // Retorna o token ID
-            token = t;
+        // Se lexema ja estiver na tabela
+        if (pos != null) {
+            // Retorna o token da tabela
+            token = pos;
             System.out.println(token.toString());
             return token;
         }
 
-        // TODO: Verificar nossos operadores
-        // Retorna operadores com mais de um caractere: >=, <=, == e !=
+        // Se o lexema ainda não estiver na tabela
+        Token t = new Token(Tag.ID, word.toString());
+        token_table.put(word.toString(), t);
+
+        // Retorna o token ID
+        token = t;
+        System.out.println(token.toString());
+        return token;
+    }
+
+    private Token readOperators() throws IOException {
         char next;
         switch (peek) {
             case '&':
@@ -173,11 +153,18 @@ public class Lexer {
                 break;
             case '|':
                 next = (char) reader.read();
-                if (next == '&') {
+                if (next == '|') {
                     peek = (char) reader.read();
-                    token = new Token(Tag.OR, "||");
-                    System.out.println(token.toString());
-                    return token;
+                    token = token_table.get("||");
+                    if (token != null) {
+                        System.out.println(token.toString());
+                        return token;
+                    }
+                    else {
+                        token = new Token(Tag.OR, "||");
+                        System.out.println(token.toString());
+                        return token;
+                    }
                 } else {
                     // TODO: Unread letra
 //                        reader.u
@@ -240,8 +227,81 @@ public class Lexer {
                 }
                 break;
         }
+        if (token != null) {
+            System.out.println(token.toString());
+        }
+        return token;
+    }
 
-        // Retorna caracteres não alphanuméricos isolados: (, ), +, -, etc.
+    private Token readDots() throws IOException {
+        int i = dotsBuilder.length();
+        while (peek == '.') {
+            i++;
+            dotsBuilder.append(peek);
+            peek = (char) reader.read();
+        }
+
+
+        if (i == 2) {
+            token = token_table.get("..");
+            if (token != null)
+                System.out.println(token.toString());
+            return token;
+        } else if (i == 3) {
+            token = token_table.get("...");
+            if (token != null)
+                System.out.println(token.toString());
+            return token;
+        }
+
+        token = token_table.get(dotsBuilder.toString());
+        if (token == null) {
+            System.out.println("[ERROR: TOKEN NAO ENCONTRADO]: i(" + i + ") - " + dotsBuilder.toString());
+            return new Token(Tag.UNKNOWN, dotsBuilder.toString());
+        } else {
+            System.out.println(token.toString());
+            return token;
+        }
+    }
+
+    Token scan(char ch) throws IOException {
+        peek = ch;
+        dotsBuilder.setLength(0);
+
+        // Ignora espaços em branco, tabulações e novas linhas
+        while (Character.isWhitespace(peek)) {
+            ignoreWhiteSpace();
+        }
+
+        // TODO: Ignorar comentários
+
+        // Retorna números
+        if (Character.isDigit(peek)) {
+            readNumbers();
+        }
+
+        // Retorna palavras-chave e identificadores
+        if (Character.isAlphabetic(peek)) {
+            readWords();
+        }
+
+        // TODO: Verificar nossos operadores
+        // Retorna operadores com mais de um caractere: >=, <=, == e !=
+        if (peek == '<' || peek == '>' || peek == '&' || peek == '|' || peek == '!')
+            readOperators();
+
+        // TODO: ? Retorna caracteres não alphanuméricos isolados: (, ), +, -, etc.
+
+        // Retorna pontos
+        if (peek == '.') {
+            readDots();
+        }
+
+        // Retorna números
+        if (Character.isDigit(peek)) {
+            readNumbers();
+        }
+
         return token;
     }
 }
