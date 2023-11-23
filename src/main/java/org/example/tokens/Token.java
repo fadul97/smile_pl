@@ -13,4 +13,11 @@ public class Token {
         return "<" + tag.toString() + ", " + lexeme + ">";
     }
 
+    public Tag getTag() {
+        return tag;
+    }
+
+    public String getLexeme() {
+        return lexeme;
+    }
 }

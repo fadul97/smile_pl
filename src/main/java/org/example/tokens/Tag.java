@@ -11,6 +11,7 @@ public enum Tag {
     NUM,
     INTEGER,
     FLOATING,
+    STRING,
     TYPE,
     TRUE,
     FALSE,
@@ -27,5 +28,8 @@ public enum Tag {
     LTE,
     GTE,
     UNKNOWN,
+    NOT,
+    LEFT_SMILE,
+    RIGHT_SMILE,
     EOF
 }

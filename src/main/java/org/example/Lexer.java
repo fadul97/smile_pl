@@ -35,6 +35,7 @@ public class Lexer {
         token_table.put("..", new Token(Tag.END_OF_EXPRESSION, ".."));
         token_table.put("...", new Token(Tag.THREE_DOT, "..."));
         token_table.put("||", new Token(Tag.OR, "||"));
+        token_table.put("!", new Token(Tag.NOT, "!"));
         // TODO: Adicionar keywords
 
         // DEBUG: Printa todas as keywords
@@ -73,21 +74,30 @@ public class Lexer {
     private Token readNumbers() throws IOException {
         // Ponto-flutuante não foi encontrado
         boolean dot = false;
+        boolean decimal = false;
 
         // Acumula numeros
         StringBuilder number = new StringBuilder();
         do {
             if (peek == '.') {
+                peek = (char) reader.read();
                 // Primeiro ponto encontrado
-                if (!dot) {
-                    dot = true;
+                if (!decimal && Character.isDigit(peek)) {
+                    number.append(".");
+                    decimal = true;
                 } else {
                     // Segundo ponto encontrado - Final da expressao, loop ou erro
 //                    System.out.println("[IMPORTANTE] Segundo ponto");
-                    dot = false;
-                    dotsBuilder.append(number.charAt(number.length() - 1));
-                    number.deleteCharAt(number.length() - 1);
-                    break;
+                    dotsBuilder.append(".");
+                    token = token_table.get(number.toString());
+                    if (token == null) {
+                        if (decimal)
+                            token = new Token(Tag.FLOATING, number.toString());
+                        else
+                            token = new Token(Tag.INTEGER, number.toString());
+                    }
+                    System.out.println(token.toString());
+                    return token;
                 }
             }
 
@@ -96,7 +106,7 @@ public class Lexer {
         } while (Character.isDigit(peek) || peek == '.');
 
 
-        if (dot) {
+        if (decimal) {
             token = new Token(Tag.FLOATING, number.toString());
             System.out.println(token.toString());
             return token;
@@ -113,7 +123,7 @@ public class Lexer {
         do {
             word.append(peek);
             peek = (char) reader.read();
-        } while (Character.isAlphabetic(peek));
+        } while (Character.isAlphabetic(peek) || Character.isDigit(peek) || peek == '_');
 
         // DEBUG: Procurar token na tabela
         Token pos = token_table.get(word.toString());
@@ -140,36 +150,39 @@ public class Lexer {
         char next;
         switch (peek) {
             case '&':
-                next = (char) reader.read();
-                if (next == '&') {
-                    peek = (char) reader.read();
-                    token = new Token(Tag.AND, "&&");
+                peek = (char) reader.read();
+                if (peek == '&') {
+                    token = token_table.get("&&");
+                    if (token == null) {
+                        token = new Token(Tag.AND, "&&");
+                    }
                     System.out.println(token.toString());
                     return token;
                 } else {
-                    // TODO: Unread letra
-//                        reader.u
+                    // TODO: Unread letra - Talvez nao funcione
+                    // TODO: Arrumar linha
+                    System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
+                    token = new Token(Tag.UNKNOWN, "&" + peek);
+                    System.out.println(token.toString());
+                    return token;
                 }
-                break;
             case '|':
-                next = (char) reader.read();
-                if (next == '|') {
-                    peek = (char) reader.read();
+                peek = (char) reader.read();
+                if (peek == '|') {
                     token = token_table.get("||");
-                    if (token != null) {
-                        System.out.println(token.toString());
-                        return token;
-                    }
-                    else {
+                    if (token == null) {
                         token = new Token(Tag.OR, "||");
-                        System.out.println(token.toString());
-                        return token;
                     }
+                    System.out.println(token.toString());
+                    return token;
                 } else {
-                    // TODO: Unread letra
-//                        reader.u
+                    // TODO: Unread letra - Talvez nao funcione
+                    // TODO: Arrumar linha
+                    System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
+                    token = new Token(Tag.UNKNOWN, "|" + peek);
+                    System.out.println(token.toString());
+                    return token;
                 }
-                break;
             case '>':
                 next = (char) reader.read();
                 if (next == '=') {
@@ -215,17 +228,9 @@ public class Lexer {
                 break;
             // TODO: Arrumar negacao / not equal
             case '!':
-                next = (char) reader.read();
-                if (next == '=') {
-                    peek = (char) reader.read();
-                    token = new Token(Tag.NEQ, "!=");
-                    System.out.println(token.toString());
-                    return token;
-                } else {
-                    // TODO: Unread letra
-//                        reader.u
-                }
-                break;
+                token = token_table.get("!");
+                System.out.println(token.toString());
+                return token;
         }
         if (token != null) {
             System.out.println(token.toString());
@@ -235,18 +240,20 @@ public class Lexer {
 
     private Token readDots() throws IOException {
         int i = dotsBuilder.length();
+        // Enquanto for um ponto, apenas soma e adiciona na StringBuilder
         while (peek == '.') {
             i++;
             dotsBuilder.append(peek);
             peek = (char) reader.read();
         }
 
-
+        // Se tiver 2 pontos = Final da expressao
         if (i == 2) {
             token = token_table.get("..");
             if (token != null)
                 System.out.println(token.toString());
             return token;
+            // Se tiver 3 pontos = FOR loop
         } else if (i == 3) {
             token = token_table.get("...");
             if (token != null)
@@ -262,6 +269,34 @@ public class Lexer {
             System.out.println(token.toString());
             return token;
         }
+    }
+
+    private Token readString() throws IOException {
+        StringBuilder string = new StringBuilder();
+
+        // Adiciona " na string
+        string.append(peek);
+
+        // Le proximo caracter
+        peek = (char) reader.read();
+
+        // Enquanto nao for ", adiciona na string
+        while (peek != '"') {
+            string.append(peek);
+            peek = (char) reader.read();
+        }
+
+        // Adiciona " na string
+        string.append(peek);
+
+        // Procura por string na tabela de tokens
+        token = token_table.get(string.toString());
+        if (token == null) {
+            token = new Token(Tag.STRING, string.toString());
+        }
+
+        System.out.println(token.toString());
+        return token;
     }
 
     Token scan(char ch) throws IOException {
@@ -281,7 +316,7 @@ public class Lexer {
         }
 
         // Retorna palavras-chave e identificadores
-        if (Character.isAlphabetic(peek)) {
+        if (Character.isAlphabetic(peek)  || peek == '_') {
             readWords();
         }
 
@@ -290,7 +325,12 @@ public class Lexer {
         if (peek == '<' || peek == '>' || peek == '&' || peek == '|' || peek == '!')
             readOperators();
 
-        // TODO: ? Retorna caracteres não alphanuméricos isolados: (, ), +, -, etc.
+        // Retorna string
+        if (peek == '"') {
+            readString();
+        }
+
+        // TODO: Retornar parenteses (: ou :)
 
         // Retorna pontos
         if (peek == '.') {
