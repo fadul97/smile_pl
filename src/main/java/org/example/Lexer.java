@@ -31,6 +31,9 @@ public class Lexer {
         token_table.put("go", new Token(Tag.GO, "go"));
         token_table.put("while", new Token(Tag.WHILE, "while"));
         token_table.put("if", new Token(Tag.IF, "if"));
+        token_table.put("then", new Token(Tag.THEN, "then"));
+        token_table.put("elif", new Token(Tag.ELIF, "elif"));
+        token_table.put("ifnot", new Token(Tag.IFNOT, "ifnot"));
         token_table.put("scenario", new Token(Tag.SCENARIO, "scenario"));
         token_table.put("..", new Token(Tag.END_OF_EXPRESSION, ".."));
         token_table.put("...", new Token(Tag.THREE_DOT, "..."));
