@@ -34,5 +34,7 @@ public enum Tag {
     NOT,
     LEFT_SMILE,
     RIGHT_SMILE,
+    LEFT_PAR,
+    RIGHT_PAR,
     EOF
 }

@@ -8,6 +8,8 @@ TheBeginning
     :) ifnot (:
     :)
 
+    write("oi")
+
     for 0...100 go (:
     :)
 
