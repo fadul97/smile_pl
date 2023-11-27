@@ -78,7 +78,7 @@ public class Lexer {
 
     private Token readNumbers() throws IOException {
         // Ponto-flutuante não foi encontrado
-        boolean dot = false;
+        char last = peek;
         boolean decimal = false;
 
         // Acumula numeros
@@ -101,17 +101,19 @@ public class Lexer {
                         else
                             token = new Token(Tag.INTEGER, number.toString());
                     }
+                    // peek = last;
                     System.out.println(token.toString());
                     return token;
                 }
             }
 
             number.append(peek);
+            last = peek;
             peek = (char) reader.read();
         } while (Character.isDigit(peek) || peek == '.');
 
         if (decimal) {
-            token = new Token(Tag.FLOATING, number.toString());
+            token = new Token(Tag.FLOATING, number.toString()); 
             System.out.println(token.toString());
             return token;
         } else {
@@ -206,12 +208,24 @@ public class Lexer {
             case '<':
                 peek = (char) reader.read();
                 if (peek == '=') {
-                    token = token_table.get("<=");
-                    if (token == null) {
-                        token = new Token(Tag.LTE, "<=");
+                    char last = peek;
+                    peek = (char) reader.read();
+
+                    if (peek == '>') { //verifica se é atribuição <=>
+                        token = token_table.get("<=>");
+                        if (token == null) {
+                            token = new Token(Tag.ATTRIBUTION, "<=>");
+                        } 
+                    } else {
+                        peek = last;
+                        token = token_table.get("<=");
+                        if (token == null) {
+                            token = new Token(Tag.LTE, "<=");
+                        } 
                     }
                     System.out.println(token.toString());
                     return token;
+
                 } else {
                     // TODO: Unread letra
                     // TODO: Arrumar linha
@@ -303,7 +317,6 @@ public class Lexer {
             dotsBuilder.append(peek);
             peek = (char) reader.read();
         }
-
         // Se tiver 2 pontos = Final da expressao
         if (i == 2) {
             token = token_table.get("..");
