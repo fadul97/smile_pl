@@ -6,7 +6,6 @@ import org.example.tokens.Token;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Scanner;
 
 public class Lexer {
     private int line;
