@@ -16,12 +16,16 @@ public class Lexer {
     private BufferedReader reader;
     private Token token;
     private StringBuilder dotsBuilder;
+    private StringBuilder stringBuilder;
+    private StringBuilder word;
 
     public Lexer() {
         line = 1;
         peek = ' ';
         token_table = new HashMap<>();
         dotsBuilder = new StringBuilder();
+        stringBuilder = new StringBuilder();
+        word = new StringBuilder();
         token_table.put("TheBeginning", new Token(Tag.BEGINNING, "TheBeginning"));
         token_table.put("TheEnd", new Token(Tag.END, "TheEnd"));
         token_table.put("true", new Token(Tag.TRUE, "true"));
@@ -124,8 +128,6 @@ public class Lexer {
     }
 
     private Token readWords() throws IOException {
-        StringBuilder word = new StringBuilder();
-
         do {
             word.append(peek);
             peek = (char) reader.read();
@@ -139,6 +141,7 @@ public class Lexer {
             // Retorna o token da tabela
             token = pos;
             System.out.println(token.toString());
+            word.setLength(0);
             return token;
         }
 
@@ -149,6 +152,7 @@ public class Lexer {
         // Retorna o token ID
         token = t;
         System.out.println(token.toString());
+        word.setLength(0);
         return token;
     }
 
@@ -274,8 +278,9 @@ public class Lexer {
                         token = new Token(Tag.LEFT_PAR, "(");
                     }
                     System.out.println(token.toString());
+                    stringBuilder.append(peek);
 
-                    peek = last; // pega o ultimo valor para não perder o valor
+//                    peek = last; // pega o ultimo valor para não perder o valor
                     return token;
                 } else {
                     token = token_table.get("(:");
@@ -285,9 +290,9 @@ public class Lexer {
                     System.out.println(token.toString());
                     return token;
                 }
-            case ')':
+            case ':':
                 peek = (char) reader.read();
-                if (peek != ':') {
+                if (peek != ')') {
                     token = token_table.get(")");
                     if (token == null) {
                         token = new Token(Tag.RIGHT_PAR, ")");
@@ -342,29 +347,59 @@ public class Lexer {
     }
 
     private Token readString() throws IOException {
-        StringBuilder string = new StringBuilder();
+//        StringBuilder string = new StringBuilder();
 
-        // Adiciona " na string
-        string.append(peek);
+        // Adiciona " na string, se nao tiver sido adicionado
+        if (stringBuilder.length() <= 0)
+            stringBuilder.append(peek);
 
         // Le proximo caracter
         peek = (char) reader.read();
 
         // Enquanto nao for ", adiciona na string
         while (peek != '"') {
-            string.append(peek);
+            if (peek == '{') {
+                peek = (char) reader.read();
+
+                // Ignora espacos em branco
+                while (Character.isWhitespace(peek)) peek = (char) reader.read();
+
+                readWords();
+
+                // Procurar na tabela de variaveis
+                Token t = token_table.get(token.getLexeme());
+                if (t != null) {
+                    System.out.println("Nao esta na tabela de variaveis.");
+                } else {
+                    System.out.println("Trocando variavel pelo seu valor.");
+                    // TODO: Trocar
+                }
+
+                // Ignora espacos em branco
+                while (Character.isWhitespace(peek)) peek = (char) reader.read();
+
+//                System.out.println("Token encontrado: " + token.toString());
+//                System.out.println("Var encontrada: " + word.toString());
+                stringBuilder.append(token.getLexeme());
+            } else if (peek == '}') {
+                // NADA
+            } else {
+                stringBuilder.append(peek);
+            }
+
             peek = (char) reader.read();
         }
 
         // Adiciona " na string
-        string.append(peek);
+        stringBuilder.append(peek);
 
         // Procura por string na tabela de tokens
-        token = token_table.get(string.toString());
+        token = token_table.get(stringBuilder.toString());
         if (token == null) {
-            token = new Token(Tag.STRING, string.toString());
+            token = new Token(Tag.STRING, stringBuilder.toString());
         }
 
+        stringBuilder.setLength(0);
         System.out.println(token.toString());
         return token;
     }
@@ -382,7 +417,7 @@ public class Lexer {
 
         // Retorna números
         if (Character.isDigit(peek)) {
-            return readNumbers();
+            readNumbers();
         }
 
         // Retorna palavras-chave e identificadores

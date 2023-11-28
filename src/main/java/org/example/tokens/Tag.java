@@ -36,5 +36,7 @@ public enum Tag {
     RIGHT_SMILE,
     LEFT_PAR,
     RIGHT_PAR,
+    OPEN_BRACK,
+    CLOSE_BRACK,
     EOF
 }
