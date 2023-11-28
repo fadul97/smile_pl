@@ -244,6 +244,7 @@ public class Lexer {
                     token = token_table.get("==");
                     if (token == null) {
                         token = new Token(Tag.EQ, "==");
+                        //Comentario
                     }
                     System.out.println(token.toString());
                     return token;
