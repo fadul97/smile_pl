@@ -10,6 +10,8 @@ TheBeginning
 
     write("oi")
     
+    write("oi {   _var    }")
+
     for 0...100 go (:
     :)
 
