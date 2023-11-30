@@ -5,8 +5,12 @@ import org.example.tokens.Token;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
+
+import java.util.Optional;
 
 public class Lexer {
     private int line;
@@ -16,6 +20,8 @@ public class Lexer {
     private BufferedReader reader;
     private Token token;
     private StringBuilder dotsBuilder;
+    private String outPath = "out.c";
+    public List<Token> seqTokens = new ArrayList<>();
 
     public Lexer() {
         line = 1;
@@ -58,8 +64,10 @@ public class Lexer {
                             new FileInputStream(mainFile),
                             StandardCharsets.UTF_8));
             int character;
-            while ((character = reader.read()) != -1)
+            while ((character = reader.read()) != -1){
                 scan((char) character);
+                seqTokens.add(token);
+            }
 
         } catch (FileNotFoundException e) {
             System.out.println("Arquivo nao encontrado.");
@@ -70,17 +78,17 @@ public class Lexer {
         }
     }
 
+    
     private void ignoreWhiteSpace() throws IOException {
         if (peek == '\n')
-            line += 1;
+        line += 1;
         peek = (char) reader.read();
     }
-
+    
     private Token readNumbers() throws IOException {
         // Ponto-flutuante não foi encontrado
-        char last = peek;
         boolean decimal = false;
-
+        
         // Acumula numeros
         StringBuilder number = new StringBuilder();
         do {
@@ -97,23 +105,22 @@ public class Lexer {
                     token = token_table.get(number.toString());
                     if (token == null) {
                         if (decimal)
-                            token = new Token(Tag.FLOATING, number.toString());
+                        token = new Token(Tag.FLOATING, number.toString());
                         else
-                            token = new Token(Tag.INTEGER, number.toString());
+                        token = new Token(Tag.INTEGER, number.toString());
                     }
                     // peek = last;
                     System.out.println(token.toString());
                     return token;
                 }
             }
-
+            
             number.append(peek);
-            last = peek;
             peek = (char) reader.read();
         } while (Character.isDigit(peek) || peek == '.');
 
         if (decimal) {
-            token = new Token(Tag.FLOATING, number.toString()); 
+            token = new Token(Tag.FLOATING, number.toString());
             System.out.println(token.toString());
             return token;
         } else {
@@ -122,18 +129,18 @@ public class Lexer {
             return token;
         }
     }
-
+    
     private Token readWords() throws IOException {
         StringBuilder word = new StringBuilder();
-
+        
         do {
             word.append(peek);
             peek = (char) reader.read();
         } while (Character.isAlphabetic(peek) || Character.isDigit(peek) || peek == '_');
-
+        
         // DEBUG: Procurar token na tabela
         Token pos = token_table.get(word.toString());
-
+        
         // Se lexema ja estiver na tabela
         if (pos != null) {
             // Retorna o token da tabela
@@ -141,23 +148,23 @@ public class Lexer {
             System.out.println(token.toString());
             return token;
         }
-
+        
         // Se o lexema ainda não estiver na tabela
         Token t = new Token(Tag.ID, word.toString());
         token_table.put(word.toString(), t);
-
+        
         // Retorna o token ID
         token = t;
         System.out.println(token.toString());
         return token;
     }
-
+    
     private Token readOperators() throws IOException {
         switch (peek) {
             case '&':
-                peek = (char) reader.read();
-                if (peek == '&') {
-                    token = token_table.get("&&");
+            peek = (char) reader.read();
+            if (peek == '&') {
+                token = token_table.get("&&");
                     if (token == null) {
                         token = new Token(Tag.AND, "&&");
                     }
@@ -172,60 +179,60 @@ public class Lexer {
                     return token;
                 }
             case '|':
-                peek = (char) reader.read();
-                if (peek == '|') {
-                    token = token_table.get("||");
-                    if (token == null) {
-                        token = new Token(Tag.OR, "||");
-                    }
-                    System.out.println(token.toString());
-                    return token;
-                } else {
-                    // TODO: Unread letra - Talvez nao funcione
-                    // TODO: Arrumar linha
-                    System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
-                    token = new Token(Tag.UNKNOWN, "|" + peek);
-                    System.out.println(token.toString());
-                    return token;
+            peek = (char) reader.read();
+            if (peek == '|') {
+                token = token_table.get("||");
+                if (token == null) {
+                    token = new Token(Tag.OR, "||");
                 }
+                System.out.println(token.toString());
+                return token;
+            } else {
+                // TODO: Unread letra - Talvez nao funcione
+                // TODO: Arrumar linha
+                System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
+                token = new Token(Tag.UNKNOWN, "|" + peek);
+                System.out.println(token.toString());
+                return token;
+            }
             case '>':
-                peek = (char) reader.read();
-                if (peek == '=') {
-                    token = token_table.get(">=");
-                    if (token == null) {
-                        token = new Token(Tag.GTE, ">=");
-                    }
-                    System.out.println(token.toString());
-                    return token;
-                } else {
-                    // TODO: Unread letra
-                    // TODO: Arrumar linha
-                    System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
-                    token = new Token(Tag.UNKNOWN, ">" + peek);
-                    System.out.println(token.toString());
-                    return token;
+            peek = (char) reader.read();
+            if (peek == '=') {
+                token = token_table.get(">=");
+                if (token == null) {
+                    token = new Token(Tag.GTE, ">=");
                 }
+                System.out.println(token.toString());
+                return token;
+            } else {
+                // TODO: Unread letra
+                // TODO: Arrumar linha
+                System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
+                token = new Token(Tag.UNKNOWN, ">" + peek);
+                System.out.println(token.toString());
+                return token;
+            }
             case '<':
-                peek = (char) reader.read();
+            peek = (char) reader.read();
                 if (peek == '=') {
                     char last = peek;
                     peek = (char) reader.read();
 
-                    if (peek == '>') { //verifica se é atribuição <=>
+                    if (peek == '>') { // verifica se é atribuição <=>
                         token = token_table.get("<=>");
                         if (token == null) {
                             token = new Token(Tag.ATTRIBUTION, "<=>");
-                        } 
+                        }
                     } else {
                         peek = last;
                         token = token_table.get("<=");
                         if (token == null) {
                             token = new Token(Tag.LTE, "<=");
-                        } 
+                        }
                     }
                     System.out.println(token.toString());
                     return token;
-
+                    
                 } else {
                     // TODO: Unread letra
                     // TODO: Arrumar linha
@@ -234,7 +241,7 @@ public class Lexer {
                     System.out.println(token.toString());
                     return token;
                 }
-            case '=':
+                case '=':
                 peek = (char) reader.read();
                 if (peek == '=') {
                     token = token_table.get("==");
@@ -252,7 +259,7 @@ public class Lexer {
                     return token;
                 }
                 // TODO: Arrumar negacao / not equal
-            case '!':
+                case '!':
                 token = token_table.get("!");
                 System.out.println(token.toString());
                 return token;
@@ -262,20 +269,19 @@ public class Lexer {
         }
         return token;
     }
-
+    
     private Token readParentheses() throws IOException {
         char last = peek;
         switch (peek) {
             case '(':
-                peek = (char) reader.read();
+            peek = (char) reader.read();
                 if (peek != ':') {
                     token = token_table.get("(");
                     if (token == null) {
                         token = new Token(Tag.LEFT_PAR, "(");
                     }
                     System.out.println(token.toString());
-
-                    peek = last; // pega o ultimo valor para não perder o valor
+                    
                     return token;
                 } else {
                     token = token_table.get("(:");
@@ -285,15 +291,22 @@ public class Lexer {
                     System.out.println(token.toString());
                     return token;
                 }
-            case ')':
+                case ')':
+                token = token_table.get("(");
+                if (token == null) {
+                    token = new Token(Tag.RIGHT_PAR, ")");
+                }
+                System.out.println(token.toString());
+                return token;
+            case ':':
                 peek = (char) reader.read();
-                if (peek != ':') {
-                    token = token_table.get(")");
+                if (peek != ')') {
+                    token = token_table.get(":");
                     if (token == null) {
-                        token = new Token(Tag.RIGHT_PAR, ")");
+                        token = new Token(Tag.DOUBLE_DOT, ":");
                     }
                     System.out.println(token.toString());
-
+                    
                     peek = last; // pega o ultimo valor para não perder o valor
                     return token;
                 } else {
@@ -304,30 +317,30 @@ public class Lexer {
                     System.out.println(token.toString());
                     return token;
                 }
+            }
+            
+            return null;
         }
-
-        return null;
-    }
-
+        
     private Token readDots() throws IOException {
-        int i = dotsBuilder.length();
-        // Enquanto for um ponto, apenas soma e adiciona na StringBuilder
-        while (peek == '.') {
-            i++;
-            dotsBuilder.append(peek);
-            peek = (char) reader.read();
-        }
-        // Se tiver 2 pontos = Final da expressao
-        if (i == 2) {
-            token = token_table.get("..");
-            if (token != null)
+            int i = dotsBuilder.length();
+            // Enquanto for um ponto, apenas soma e adiciona na StringBuilder
+            while (peek == '.') {
+                i++;
+                dotsBuilder.append(peek);
+                peek = (char) reader.read();
+            }
+            // Se tiver 2 pontos = Final da expressao
+            if (i == 2) {
+                token = token_table.get("..");
+                if (token != null)
                 System.out.println(token.toString());
-            return token;
-            // Se tiver 3 pontos = FOR loop
+                return token;
+                // Se tiver 3 pontos = FOR loop
         } else if (i == 3) {
             token = token_table.get("...");
             if (token != null)
-                System.out.println(token.toString());
+            System.out.println(token.toString());
             return token;
         }
 
@@ -340,34 +353,67 @@ public class Lexer {
             return token;
         }
     }
-
+    
     private Token readString() throws IOException {
         StringBuilder string = new StringBuilder();
-
+        
         // Adiciona " na string
         string.append(peek);
-
+        
         // Le proximo caracter
         peek = (char) reader.read();
-
+        
         // Enquanto nao for ", adiciona na string
         while (peek != '"') {
             string.append(peek);
             peek = (char) reader.read();
         }
-
+        
         // Adiciona " na string
         string.append(peek);
-
+        
         // Procura por string na tabela de tokens
         token = token_table.get(string.toString());
         if (token == null) {
             token = new Token(Tag.STRING, string.toString());
         }
-
+        
         System.out.println(token.toString());
         return token;
     }
+    
+    public void translate() throws IOException{
+        //TODO: Fazer leitura dos tokens na lista "seqTokens" e redirecionar para cada função
+        
+        wrAttribution("var", "int", Optional.of("2"));
+    }
+    private void wrAttribution(String var, String type, Optional<String> value) throws IOException{
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outPath));
+
+            String content = type + " " + var; 
+            if (!value.isEmpty()) {
+                content+= " = " + value.get() + ";\n";
+            }else{
+                content+= ";\n";
+            }
+            // Escreve o conteúdo no arquivo
+            writer.write(content);
+            
+            writer.close();
+            
+            //System.out.println("Conteúdo escrito no arquivo com sucesso!");
+            
+        } catch (IOException e) {
+            System.err.println("Erro ao escrever no arquivo: " + e.getMessage());
+        }
+    }
+    
+    //TODO: Criar wrFor
+    //TODO: Criar wrWrite
+    //TODO: Criar wrWhile
+    //TODO: Criar wrWhile
+    // ...
 
     Token scan(char ch) throws IOException {
         peek = ch;
@@ -382,7 +428,7 @@ public class Lexer {
 
         // Retorna números
         if (Character.isDigit(peek)) {
-            return readNumbers();
+            readNumbers();
         }
 
         // Retorna palavras-chave e identificadores
@@ -390,13 +436,11 @@ public class Lexer {
             readWords();
         }
 
-        // TODO: Verificar nossos operadores
         // Retorna operadores com mais de um caractere: >=, <=, == e !=
         if (peek == '<' || peek == '>' || peek == '&' || peek == '|' || peek == '!')
             readOperators();
 
-        // TODO: Retornar parenteses (: ou :)
-        if (peek == '(' || peek == ')') {
+        if (peek == '(' || peek == ')' || peek == ':') {
             readParentheses();
         }
 

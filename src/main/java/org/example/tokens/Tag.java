@@ -5,6 +5,7 @@ public enum Tag {
     END,
     END_OF_EXPRESSION,
     THREE_DOT,
+    DOUBLE_DOT,
     ATTRIBUTION,
     KEYWORD,
     ID,
