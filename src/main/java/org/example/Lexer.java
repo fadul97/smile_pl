@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Iterator;
 
 import java.util.Optional;
 
@@ -51,6 +52,9 @@ public class Lexer {
         token_table.put("...", new Token(Tag.THREE_DOT, "..."));
         token_table.put("||", new Token(Tag.OR, "||"));
         token_table.put("!", new Token(Tag.NOT, "!"));
+        token_table.put("write", new Token(Tag.WRITE, "write"));
+        token_table.put("read", new Token(Tag.READ, "read"));
+        token_table.put("is", new Token(Tag.IS, "is"));
 
         // TODO: Adicionar keywords
 
@@ -420,10 +424,22 @@ public class Lexer {
     public void translate() throws IOException{
         //TODO: Fazer leitura dos tokens na lista "seqTokens" e redirecionar para cada função
 
-        for (Token element: seqTokens){
+        Iterator<Token> iterator = seqTokens.iterator();
+        while (iterator.hasNext()){
+
+            Token element = iterator.next();
 
             if (element.getTag() == Tag.BEGINNING) {
                 wrBeginning();
+            }
+            //TODO: Fazer a verificação dos tokens
+            if (element.getTag() == Tag.VAR) {
+                String var = element.getLexeme();
+                element = iterator.next();
+                if (element.getTag() == Tag.ATTRIBUTION) {
+                    element = iterator.next();
+                    
+                }
             }
 
             if(element.getTag() == Tag.END){
