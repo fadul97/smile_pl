@@ -24,6 +24,8 @@ public class Lexer {
     public List<Token> seqTokens = new ArrayList<>();
     private StringBuilder stringBuilder;
     private StringBuilder word;
+    private BufferedWriter writer;
+    private String content;
 
     public Lexer() {
         line = 1;
@@ -49,6 +51,7 @@ public class Lexer {
         token_table.put("...", new Token(Tag.THREE_DOT, "..."));
         token_table.put("||", new Token(Tag.OR, "||"));
         token_table.put("!", new Token(Tag.NOT, "!"));
+
         // TODO: Adicionar keywords
 
         // DEBUG: Printa todas as keywords
@@ -72,6 +75,8 @@ public class Lexer {
                 scan((char) character);
                 seqTokens.add(token);
             }
+
+            writer = new BufferedWriter(new FileWriter(outPath));
 
         } catch (FileNotFoundException e) {
             System.out.println("Arquivo nao encontrado.");
@@ -153,10 +158,10 @@ public class Lexer {
         }
         
         // Se o lexema ainda não estiver na tabela
-        Token t = new Token(Tag.ID, word.toString());
+        Token t = new Token(Tag.VAR, word.toString());
         token_table.put(word.toString(), t);
         
-        // Retorna o token ID
+        // Retorna o token VAR
         token = t;
         System.out.println(token.toString());
         word.setLength(0);
@@ -414,28 +419,47 @@ public class Lexer {
     
     public void translate() throws IOException{
         //TODO: Fazer leitura dos tokens na lista "seqTokens" e redirecionar para cada função
-        
-        wrAttribution("var", "int", Optional.of("2"));
+
+        for (Token element: seqTokens){
+
+            if (element.getTag() == Tag.BEGINNING) {
+                wrBeginning();
+            }
+
+            if(element.getTag() == Tag.END){
+                wrTheEnd();
+            }
+        }
+        //wrAttribution("var", "int", Optional.of("2"));
     }
+
+    private void wrBeginning() throws IOException{
+
+        try {
+            content = "#include <stdio.h>\n\n" + 
+                  "int main(int agrc, char* argv[]){\n";
+            writer.write(content);
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+    }
+    
     private void wrAttribution(String var, String type, Optional<String> value) throws IOException{
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outPath));
-
-            String content = type + " " + var; 
+            
+            content = type + " " + var; 
             if (!value.isEmpty()) {
                 content+= " = " + value.get() + ";\n";
             }else{
                 content+= ";\n";
             }
-            // Escreve o conteúdo no arquivo
+            
             writer.write(content);
             
-            writer.close();
-            
-            //System.out.println("Conteúdo escrito no arquivo com sucesso!");
-            
         } catch (IOException e) {
-            System.err.println("Erro ao escrever no arquivo: " + e.getMessage());
+            // TODO: handle exception        
         }
     }
     
@@ -444,7 +468,20 @@ public class Lexer {
     //TODO: Criar wrWhile
     //TODO: Criar wrWhile
     // ...
+    private void wrTheEnd() throws IOException{
 
+        try {
+            content = "    return 0;\n}";
+            writer.write(content);
+            
+            writer.close();
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+    }
+    
     Token scan(char ch) throws IOException {
         peek = ch;
         dotsBuilder.setLength(0);

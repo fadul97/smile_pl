@@ -1,1 +1,5 @@
-int var = 2;
+#include <stdio.h>
+
+int main(int agrc, char* argv[]){
+    return 0;
+}

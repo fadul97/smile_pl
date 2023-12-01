@@ -8,7 +8,7 @@ public enum Tag {
     DOUBLE_DOT,
     ATTRIBUTION,
     KEYWORD,
-    ID,
+    VAR,
     NUM,
     INTEGER,
     FLOATING,
