@@ -490,12 +490,57 @@ public class Lexer {
                 wrWhileLoop(iterator);
             }
 
+            if (element.getTag() == Tag.IF) {
+                wrIf(iterator);
+            }
+
             if(element.getTag() == Tag.END){
                 wrTheEnd();
             }
         }
 
         //wrAttribution("var", "int", Optional.of("2"));
+    }
+
+    private void wrIf(Iterator<Token> iterator) throws IOException {
+        try {
+            String cont = "    if (";
+            writer.write(cont);
+
+            String test = new String();
+
+            element = iterator.next();  // Ja foi escrito o if
+            while (element.getTag() != Tag.LEFT_SMILE) {
+                if (element.getTag() == Tag.NOT) {
+                    element = iterator.next();
+                    writer.write("!" + element.getLexeme() + " ");
+                    test = test.concat("!" + element.getLexeme() + " ");
+                    // Ignora proximo !
+                    element = iterator.next();
+                } else if (element.getTag() == Tag.THEN) {
+                    // Ignora 'then'
+                    element = iterator.next();
+                    // Ignora '(:' e sai do loop
+                    element = iterator.next();
+                    break;
+                } else {
+                    cont = element.getLexeme();
+                    test = test.concat(cont + " ");
+                    writer.write(cont + " ");
+                }
+
+                element = iterator.next();
+                System.out.println("Agora no: " + element.getLexeme());
+            }
+
+            writer.write(")\n    {\n");
+
+            // TODO: Ler expressoes dentro do if
+
+            writer.write("    }\n");
+        }  catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     private void wrWhileLoop(Iterator<Token> iterator) throws IOException{
