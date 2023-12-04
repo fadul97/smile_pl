@@ -80,7 +80,7 @@ public class Lexer {
             int character;
             while ((character = reader.read()) != -1){
                 scan((char) character);
-                seqTokens.add(token);
+//                seqTokens.add(token);
             }
 
             writer = new BufferedWriter(new FileWriter(outPath));
@@ -123,9 +123,12 @@ public class Lexer {
                         if (decimal) {
                             token = new Token(Tag.FLOATING, number.toString());
                             seqTokens.add(token);
+                            return token;
                         } else {
                             token = new Token(Tag.INTEGER, number.toString());
+                            System.out.println("print aqui" + token.toString());
                             seqTokens.add(token);
+                            return token;
                         }
                     }
                     // peek = last;
@@ -145,7 +148,7 @@ public class Lexer {
             return token;
         } else {
             token = new Token(Tag.INTEGER, number.toString());
-            System.out.println(token.toString());
+            System.out.println("print aqui" + token.toString());
             seqTokens.add(token);
             return token;
         }
@@ -165,6 +168,7 @@ public class Lexer {
             // Retorna o token da tabela
             token = pos;
             System.out.println(token.toString());
+            seqTokens.add(token);
             word.setLength(0);
             return token;
         }
@@ -176,6 +180,7 @@ public class Lexer {
         // Retorna o token VAR
         token = t;
         System.out.println(token.toString());
+        seqTokens.add(token);
         word.setLength(0);
         return token;
     }
@@ -190,6 +195,7 @@ public class Lexer {
                         token = new Token(Tag.AND, "&&");
                     }
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                 } else {
                     // TODO: Unread letra - Talvez nao funcione
@@ -197,6 +203,7 @@ public class Lexer {
                     System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
                     token = new Token(Tag.UNKNOWN, "&" + peek);
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                 }
             case '|':
@@ -207,6 +214,7 @@ public class Lexer {
                     token = new Token(Tag.OR, "||");
                 }
                 System.out.println(token.toString());
+                seqTokens.add(token);
                 return token;
             } else {
                 // TODO: Unread letra - Talvez nao funcione
@@ -214,6 +222,7 @@ public class Lexer {
                 System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
                 token = new Token(Tag.UNKNOWN, "|" + peek);
                 System.out.println(token.toString());
+                seqTokens.add(token);
                 return token;
             }
             case '>':
@@ -224,6 +233,7 @@ public class Lexer {
                     token = new Token(Tag.GTE, ">=");
                 }
                 System.out.println(token.toString());
+                seqTokens.add(token);
                 return token;
             } else {
                 // TODO: Unread letra
@@ -231,6 +241,7 @@ public class Lexer {
                 System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
                 token = new Token(Tag.UNKNOWN, ">" + peek);
                 System.out.println(token.toString());
+                seqTokens.add(token);
                 return token;
             }
             case '<':
@@ -252,6 +263,7 @@ public class Lexer {
                         }
                     }
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                     
                 } else {
@@ -260,6 +272,7 @@ public class Lexer {
                     System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
                     token = new Token(Tag.UNKNOWN, "<" + peek);
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                 }
                 case '=':
@@ -271,6 +284,7 @@ public class Lexer {
                         //Comentario
                     }
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                 } else {
                     // TODO: Unread letra
@@ -278,12 +292,14 @@ public class Lexer {
                     System.out.println("[ERROR]: Caracter inesperado: '" + peek + "' na linha " + line + ".");
                     token = new Token(Tag.UNKNOWN, "=" + peek);
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                 }
                 // TODO: Arrumar negacao / not equal
                 case '!':
                 token = token_table.get("!");
                 System.out.println(token.toString());
+                seqTokens.add(token);
                 return token;
         }
         if (token != null) {
@@ -303,6 +319,7 @@ public class Lexer {
                         token = new Token(Tag.LEFT_PAR, "(");
                     }
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     stringBuilder.append(peek);
 
 //                    peek = last; // pega o ultimo valor para não perder o valor
@@ -313,6 +330,7 @@ public class Lexer {
                         token = new Token(Tag.LEFT_SMILE, "(:");
                     }
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                 }
             case ':':
@@ -323,6 +341,7 @@ public class Lexer {
                         token = new Token(Tag.DOUBLE_DOT, ":");
                     }
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     
                     peek = last; // pega o ultimo valor para não perder o valor
                     return token;
@@ -332,6 +351,7 @@ public class Lexer {
                         token = new Token(Tag.RIGHT_SMILE, ":)");
                     }
                     System.out.println(token.toString());
+                    seqTokens.add(token);
                     return token;
                 }
             }
@@ -431,6 +451,7 @@ public class Lexer {
 
         stringBuilder.setLength(0);
         System.out.println(token.toString());
+        seqTokens.add(token);
         return token;
     }
     
@@ -461,8 +482,12 @@ public class Lexer {
             }
 
             if (element.getTag() == Tag.FOR) {
-                wrForLoop(element, iterator);
+                wrForLoop(iterator);
                 System.out.println("Fora da funcao: " + element.toString());
+            }
+
+            if (element.getTag() == Tag.WHILE) {
+                wrWhileLoop(iterator);
             }
 
             if(element.getTag() == Tag.END){
@@ -473,11 +498,49 @@ public class Lexer {
         //wrAttribution("var", "int", Optional.of("2"));
     }
 
+    private void wrWhileLoop(Iterator<Token> iterator) throws IOException{
+        try {
+            String cont = "    while (";
+            writer.write(cont);
+
+            String test = new String();
+
+            element = iterator.next();
+            boolean first = true;   // Controlar espaco adicional antes do ')'
+            while (element.getTag() != Tag.LEFT_SMILE) {
+                if (element.getTag() == Tag.NOT) {
+                    element = iterator.next();
+                    writer.write("!" + element.getLexeme() + " ");
+                    test = test.concat("!" + element.getLexeme() + " ");
+                    // Ignora proximo !
+                    element = iterator.next();
+                } else {
+                    cont = element.getLexeme();
+                    test = test.concat(cont + " ");
+                    writer.write(cont + " ");
+                }
+
+                element = iterator.next();
+                System.out.println("Agora no: " + element.getLexeme());
+            }
+
+            writer.write(")\n    {\n");
+
+            // TODO: Ler expressoes dentro do while
+
+            writer.write("    }\n");
+
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+
     private boolean isFirstGreater(int first, int second) {
         return first > second;
     }
 
-    private void wrForLoop(Token element, Iterator<Token> iterator) throws IOException{
+    private void wrForLoop(Iterator<Token> iterator) throws IOException{
         try {
             // Pega primeiro parametro
             element = iterator.next();
