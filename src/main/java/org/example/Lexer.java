@@ -321,6 +321,7 @@ public class Lexer {
                     System.out.println(token.toString());
                     seqTokens.add(token);
                     stringBuilder.append(peek);
+                    System.out.println("StringBuilder: " + stringBuilder.toString());
 
 //                    peek = last; // pega o ultimo valor para não perder o valor
                     return token;
@@ -449,6 +450,7 @@ public class Lexer {
             token = new Token(Tag.STRING, stringBuilder.toString());
         }
 
+        System.out.println("stringBuilder antes do setLenght(0): " + stringBuilder.toString());
         stringBuilder.setLength(0);
         System.out.println(token.toString());
         seqTokens.add(token);
@@ -502,12 +504,78 @@ public class Lexer {
                 wrIfnot(iterator);
             }
 
+            if (element.getTag() == Tag.WRITE) {
+                wrWrite(iterator);
+            }
+
+            if (element.getTag() == Tag.READ) {
+                wrRead(iterator);
+            }
+
             if(element.getTag() == Tag.END){
                 wrTheEnd();
             }
         }
 
         //wrAttribution("var", "int", Optional.of("2"));
+    }
+
+    private void wrWrite(Iterator<Token> iterator) throws IOException{
+        try{
+            writer.write("    printf(");
+
+            // Ignora '('
+            element = iterator.next();
+            System.out.println("Ignorando: " + element.toString());
+
+            String v = new String("");
+
+            element = iterator.next();
+
+            boolean str = false;
+            if (element.getLexeme().length() > 0) {
+                if (element.getLexeme().charAt(0) == '"') {
+                    v = v.concat(element.getLexeme());
+                    str = true;
+                } else {
+                    writer.write("\"");
+                    System.out.println("Nao eh uma string : " + element.getLexeme());
+                    v = v.concat(element.getLexeme());
+                    System.out.println("V atual: " + v);
+                }
+            }
+
+            if (str) {
+                writer.write(v + ");\n");
+            } else {
+                // Nao eh uma string
+                writer.write(v + "\");\n");
+            }
+
+
+        } catch (Exception e) {
+            //  TODO: handle exception
+        }
+    }
+
+    private void wrRead(Iterator<Token> iterator) throws IOException {
+        try {
+            String cont = new String();
+            cont = cont.concat("    scanf(\"");
+
+            // Ignora '('
+            element = iterator.next();
+
+            element = iterator.next();
+            cont = cont.concat(element.getLexeme());
+
+            writer.write(cont);
+
+            writer.write("\");\n");
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     private void wrIfnot(Iterator<Token> iterator) throws IOException {
@@ -756,12 +824,10 @@ public class Lexer {
             // TODO: handle exception        
         }
     }
-    
-    //TODO: Criar wrFor
+
     //TODO: Criar wrWrite
-    //TODO: Criar wrWhile
-    //TODO: Criar wrWhile
     // ...
+
     private void wrTheEnd() throws IOException{
 
         try {

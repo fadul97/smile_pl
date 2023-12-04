@@ -20,4 +20,6 @@ TheBeginning
 
     while a && 10 || !b! && c (:
     :)
+
+    read(var)
 TheEnd

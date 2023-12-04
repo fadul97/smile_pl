@@ -10,6 +10,8 @@ int main(int argc, char* argv[]){
     else
     {
     }
+    printf("oi");
+    printf("_var");
     for (int a = 0; a <= 100; a++) {
     }
     for (int b = 10; b >= 0; b--) {
@@ -17,5 +19,6 @@ int main(int argc, char* argv[]){
     while (a && 10 || !b && c )
     {
     }
+    scanf("ar");
     return 0;
 }
