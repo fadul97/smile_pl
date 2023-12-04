@@ -27,6 +27,8 @@ public class Lexer {
     private StringBuilder word;
     private BufferedWriter writer;
     private String content;
+    private Token element;
+    private static char forVar = 'a';
 
     public Lexer() {
         line = 1;
@@ -35,6 +37,7 @@ public class Lexer {
         dotsBuilder = new StringBuilder();
         stringBuilder = new StringBuilder();
         word = new StringBuilder();
+        element = new Token(Tag.UNKNOWN, "");
         token_table.put("TheBeginning", new Token(Tag.BEGINNING, "TheBeginning"));
         token_table.put("TheEnd", new Token(Tag.END, "TheEnd"));
         token_table.put("true", new Token(Tag.TRUE, "true"));
@@ -117,10 +120,13 @@ public class Lexer {
                     dotsBuilder.append(".");
                     token = token_table.get(number.toString());
                     if (token == null) {
-                        if (decimal)
-                        token = new Token(Tag.FLOATING, number.toString());
-                        else
-                        token = new Token(Tag.INTEGER, number.toString());
+                        if (decimal) {
+                            token = new Token(Tag.FLOATING, number.toString());
+                            seqTokens.add(token);
+                        } else {
+                            token = new Token(Tag.INTEGER, number.toString());
+                            seqTokens.add(token);
+                        }
                     }
                     // peek = last;
                     System.out.println(token.toString());
@@ -135,10 +141,12 @@ public class Lexer {
         if (decimal) {
             token = new Token(Tag.FLOATING, number.toString());
             System.out.println(token.toString());
+            seqTokens.add(token);
             return token;
         } else {
             token = new Token(Tag.INTEGER, number.toString());
             System.out.println(token.toString());
+            seqTokens.add(token);
             return token;
         }
     }
@@ -342,14 +350,18 @@ public class Lexer {
             // Se tiver 2 pontos = Final da expressao
             if (i == 2) {
                 token = token_table.get("..");
-                if (token != null)
-                System.out.println(token.toString());
+                if (token != null) {
+                    System.out.println(token.toString());
+                    seqTokens.add(token);
+                }
                 return token;
                 // Se tiver 3 pontos = FOR loop
         } else if (i == 3) {
             token = token_table.get("...");
-            if (token != null)
-            System.out.println(token.toString());
+            if (token != null) {
+                System.out.println(token.toString());
+                seqTokens.add(token);
+            }
             return token;
         }
 
@@ -359,6 +371,7 @@ public class Lexer {
             return new Token(Tag.UNKNOWN, dotsBuilder.toString());
         } else {
             System.out.println(token.toString());
+            seqTokens.add(token);
             return token;
         }
     }
@@ -423,11 +436,16 @@ public class Lexer {
     
     public void translate() throws IOException{
         //TODO: Fazer leitura dos tokens na lista "seqTokens" e redirecionar para cada função
+        // DEBUG
+        System.out.println("\n\n\n========== TRADUZINDO ==========");
+        for (Token t : seqTokens) {
+            System.out.println(t.toString());
+        }
 
         Iterator<Token> iterator = seqTokens.iterator();
         while (iterator.hasNext()){
 
-            Token element = iterator.next();
+            element = iterator.next();
 
             if (element.getTag() == Tag.BEGINNING) {
                 wrBeginning();
@@ -442,18 +460,80 @@ public class Lexer {
                 }
             }
 
+            if (element.getTag() == Tag.FOR) {
+                wrForLoop(element, iterator);
+                System.out.println("Fora da funcao: " + element.toString());
+            }
+
             if(element.getTag() == Tag.END){
                 wrTheEnd();
             }
         }
+
         //wrAttribution("var", "int", Optional.of("2"));
+    }
+
+    private boolean isFirstGreater(int first, int second) {
+        return first > second;
+    }
+
+    private void wrForLoop(Token element, Iterator<Token> iterator) throws IOException{
+        try {
+            // Pega primeiro parametro
+            element = iterator.next();
+            String primParam = element.getLexeme();
+//            System.out.println("Primeiro param: " + primParam);
+
+            // Ignora reticencias
+            element = iterator.next();
+
+            // Pega segundo parametro
+            element = iterator.next();
+            String segParam = element.getLexeme();
+//            System.out.println("Segundo param: " + segParam);
+
+            boolean increment = true;
+            if (isFirstGreater(Integer.parseInt(primParam), Integer.parseInt(segParam))) {
+                increment = false;
+//                    System.out.println("Primeiro eh maior que segundo, trocando valores e decrementar" + increment);
+//                    System.out.println(primParam + " e " + segParam);
+            }
+
+            if (increment) {
+                content = "    for (int " + forVar + " = " + primParam + "; " + forVar + " <= " + segParam + "; " + forVar + "++) {\n";
+            } else {
+                content = "    for (int " + forVar + " = " + primParam + "; " + forVar + " >= " + segParam + "; " + forVar + "--) {\n";
+            }
+            forVar++;
+
+            // Escrever header do loop
+            writer.write(content);
+
+            element = iterator.next();
+            System.out.println("Dentro da funcao: " + element.toString());
+            // TODO: Escrever expressoes dentro do loop
+//            while (e.getTag() != Tag.RIGHT_SMILE) {
+//                // Escrever expressoes
+//                if (e.getTag() == Tag.FOR) {
+//
+//                }
+//
+//
+//                e = iterator.next();
+//            }
+
+            writer.write("    }\n");
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     private void wrBeginning() throws IOException{
 
         try {
             content = "#include <stdio.h>\n\n" + 
-                  "int main(int agrc, char* argv[]){\n";
+                  "int main(int argc, char* argv[]){\n";
             writer.write(content);
 
         } catch (Exception e) {
