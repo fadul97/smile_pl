@@ -188,7 +188,7 @@ public class Lexer {
         // Se o lexema ainda não estiver na tabela
         Token t = new Token(Tag.VAR, word.toString());
         token_table.put(word.toString(), t);
-        
+
         // Retorna o token VAR
         token = t;
         System.out.println(token.toString());
@@ -535,7 +535,7 @@ public class Lexer {
 
             if (element.getTag() == Tag.FOR) {
                 wrForLoop(iterator);
-                System.out.println("Fora da funcao: " + element.toString());
+//                System.out.println("Fora da funcao: " + element.toString());
             }
 
             if (element.getTag() == Tag.WHILE) {
@@ -599,6 +599,18 @@ public class Lexer {
                 writer.write(v + ");\n");
             } else {
                 // Nao eh uma string
+                if (element.getTag() == Tag.VAR) {
+                    TypeValue t = var_table.get(element.getLexeme());
+                    System.out.println("Eh uma var. Nao achou t na var_table" +
+                            "Var: " + element.toString());
+                    if (t != null) {
+                        // TODO: Escrever variavel no printf
+                        System.out.println("Tipo da variavel: " + t.getType());
+                    } else {
+                        System.out.println("TypeValue eh null");
+                    }
+                }
+
                 writer.write(v + "\");\n");
             }
 
@@ -656,7 +668,7 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-                System.out.println("Agora no: " + element.getLexeme());
+//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write("\n    {\n");
@@ -697,7 +709,7 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-                System.out.println("Agora no: " + element.getLexeme());
+//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write(")\n    {\n");
@@ -738,7 +750,7 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-                System.out.println("Agora no: " + element.getLexeme());
+//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write(")\n    {\n");
@@ -774,7 +786,7 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-                System.out.println("Agora no: " + element.getLexeme());
+//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write(")\n    {\n");
@@ -826,7 +838,7 @@ public class Lexer {
             writer.write(content);
 
             element = iterator.next();
-            System.out.println("Dentro da funcao: " + element.toString());
+//            System.out.println("Dentro da funcao: " + element.toString());
             // TODO: Escrever expressoes dentro do loop
 //            while (e.getTag() != Tag.RIGHT_SMILE) {
 //                // Escrever expressoes
@@ -863,15 +875,27 @@ public class Lexer {
             //var <=> 10 is int..
             //var <=> 3 / var..
             String var = element.getLexeme();
-            String type;
+            Tag type;
             String value;
             TypeValue tp; 
                 
                 element = iterator.next();
                 if (element.getTag() == Tag.IS) {//var is int..
                     element = iterator.next();
-                    type = element.getLexeme();
-                    tp = new TypeValue(type);
+                    type = element.getTag();
+                    switch (type) {
+                        case FLOATING:
+                            tp = new TypeValue(type, element.getLexeme(), "0.0f");
+                            break;
+                        case INTEGER:
+                            tp = new TypeValue(type, element.getLexeme(), "0");
+                            break;
+                        case STRING:
+                            tp = new TypeValue(type, element.getLexeme(), "");
+                            break;
+                        default:
+                            tp = new TypeValue(type, element.getLexeme(), "NULL");
+                    }
                     var_table.put(var, tp);
                     
                     content = "    " + type + " " + var + ";\n"; //ESTA PRONTO
@@ -903,8 +927,20 @@ public class Lexer {
                             //verificar se ela existe
                         }if (element.getTag() == Tag.IS) { //var <=> 10 is int.. 
                             element = iterator.next();
-                            type = element.getLexeme(); 
-                            tp = new TypeValue(type);
+                            type = element.getTag();
+                            switch (type) {
+                                case FLOATING:
+                                    tp = new TypeValue(type, element.getLexeme(), "0.0f");
+                                    break;
+                                case INTEGER:
+                                    tp = new TypeValue(type, element.getLexeme(), "0");
+                                    break;
+                                case STRING:
+                                    tp = new TypeValue(type, element.getLexeme(), "");
+                                    break;
+                                default:
+                                    tp = new TypeValue(type, element.getLexeme(), "NULL");
+                            }
                             var_table.put(var, tp);
                             content =  type + " " + content;
                             break;

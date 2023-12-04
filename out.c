@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 int main(int argc, char* argv[]){
-    int var = 10;
+    TYPE var = 10;
     var = a + 10;
     if (var <= _var )
     {
@@ -12,7 +12,8 @@ int main(int argc, char* argv[]){
     else
     {
     }
-    var = a + 10;
+    printf("oi");
+    printf("_var");
     for (int a = 0; a <= 100; a++) {
     }
     for (int b = 10; b >= 0; b--) {

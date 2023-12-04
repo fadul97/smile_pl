@@ -1,28 +1,38 @@
 package org.example;
 
-public class TypeValue {
-    String type;
-    String value;
+import org.example.tokens.Tag;
+import org.example.tokens.Token;
 
-    public TypeValue(String type) {
-        this.type = type;
-        this.value = null;
-    }
-    public TypeValue(String type, String value) {
-        this.type = type;
+public class TypeValue {
+    private Token token;
+    private String value;
+
+    public TypeValue(Tag type, String lexeme, String value) {
+        this.token = new Token(type, lexeme);
         this.value = value;
     }
-    public String getType() {
-        return type;
+
+    public Tag getType() {
+        return this.token.getTag();
     }
+
+    public String getLexeme() {
+        return token.getLexeme();
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
+
     public String getValue() {
         return value;
     }
-    public void setType(String type) {
-        this.type = type;
-    }
+
     public void setValue(String value) {
         this.value = value;
     }
-    
 }
