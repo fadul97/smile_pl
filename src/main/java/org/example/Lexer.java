@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Iterator;
 
@@ -17,6 +18,7 @@ public class Lexer {
     private int line;
     private char peek;
     private HashMap<String, Token> token_table;
+    private HashMap<String, TypeValue> var_table;
     private File mainFile;
     private BufferedReader reader;
     private Token token;
@@ -34,6 +36,7 @@ public class Lexer {
         line = 1;
         peek = ' ';
         token_table = new HashMap<>();
+        var_table = new HashMap<>();
         dotsBuilder = new StringBuilder();
         stringBuilder = new StringBuilder();
         word = new StringBuilder();
@@ -58,6 +61,10 @@ public class Lexer {
         token_table.put("write", new Token(Tag.WRITE, "write"));
         token_table.put("read", new Token(Tag.READ, "read"));
         token_table.put("is", new Token(Tag.IS, "is"));
+        token_table.put("-", new Token(Tag.MINUS, "-"));
+        token_table.put("+", new Token(Tag.PLUS, "+"));
+        token_table.put("*", new Token(Tag.MULTIPLY, "*"));
+        token_table.put("/", new Token(Tag.DIVISION, "/"));
 
         // TODO: Adicionar keywords
 
@@ -67,6 +74,8 @@ public class Lexer {
             System.out.println("Key: " + key);
         }
         System.out.println("\n\n");
+        
+        
     }
 
     public void start() throws IOException {
@@ -82,7 +91,10 @@ public class Lexer {
                 scan((char) character);
 //                seqTokens.add(token);
             }
-
+            for (String key : var_table.keySet()) {
+                System.out.println("Key: " + key);
+            }
+            System.out.println("\n\n");
             writer = new BufferedWriter(new FileWriter(outPath));
 
         } catch (FileNotFoundException e) {
@@ -308,6 +320,49 @@ public class Lexer {
         return token;
     }
     
+    private Token readMath() throws IOException{
+        switch (peek) {
+            case '+':
+                token = token_table.get("+");
+                if (token == null) {
+                    token = new Token(Tag.PLUS, "+");
+                }
+                System.out.println(token.toString());
+                seqTokens.add(token);
+
+                return token;
+            case '-':
+                token = token_table.get("-");
+                if (token == null) {
+                    token = new Token(Tag.MINUS, "-");
+                }
+                System.out.println(token.toString());
+                seqTokens.add(token);
+
+                return token;
+            case '/':
+                token = token_table.get("/");
+                if (token == null) {
+                    token = new Token(Tag.DIVISION, "/");
+                }
+                System.out.println(token.toString());
+                seqTokens.add(token);
+
+                return token;
+            case '*': 
+                token = token_table.get("*");
+                if (token == null) {
+                    token = new Token(Tag.MULTIPLY, "*");
+                }
+                System.out.println(token.toString());
+                seqTokens.add(token);
+
+                return token;
+        }
+
+        return null;
+    }
+
     private Token readParentheses() throws IOException {
         char last = peek;
         switch (peek) {
@@ -473,12 +528,7 @@ public class Lexer {
             }
             //TODO: Fazer a verificação dos tokens
             if (element.getTag() == Tag.VAR) {
-                String var = element.getLexeme();
-                element = iterator.next();
-                if (element.getTag() == Tag.ATTRIBUTION) {
-                    element = iterator.next();
-                    
-                }
+                wrAttribution(element, iterator);
             }
 
             if (element.getTag() == Tag.FOR) {
@@ -740,15 +790,66 @@ public class Lexer {
         
     }
     
-    private void wrAttribution(String var, String type, Optional<String> value) throws IOException{
+    private void wrAttribution(Token element, Iterator<Token> iterator) throws IOException{
         try {
-            
-            content = type + " " + var; 
-            if (!value.isEmpty()) {
-                content+= " = " + value.get() + ";\n";
-            }else{
-                content+= ";\n";
-            }
+            //var <=> 10 is int..
+            //var <=> 3 / var..
+            String var = element.getLexeme();
+            String type;
+            String value;
+            TypeValue tp; 
+                
+                element = iterator.next();
+                if (element.getTag() == Tag.IS) {//var is int..
+                    element = iterator.next();
+                    type = element.getLexeme();
+                    tp = new TypeValue(type);
+                    var_table.put(var, tp);
+                    
+                    content = "    " + type + " " + var + ";\n"; //ESTA PRONTO
+                    
+                }else if (element.getTag() == Tag.ATTRIBUTION) {
+                    
+                    content = var + " =";
+
+                    while (element.getTag() != Tag.END_OF_EXPRESSION) {//var <=> 10 + b / a..
+                              
+                        element = iterator.next();
+
+                        if (element.getTag() == Tag.VAR){ 
+                            String varName = element.getLexeme();
+                            content += " " + varName;
+
+                            // for (HashMap.Entry<String, TypeValue> entry : var_table.entrySet()) {
+                            //     String varName2 = entry.getKey();
+                            //     if(varName2 == varName){//existe var na var_table
+                            //         TypeValue tp2 = entry.getValue();
+                            //         //fazer verificacao de tipos e pegar o valor da variavel
+                            //     }
+                            // }
+
+                        }
+                        if((element.getTag() == Tag.INTEGER) || (element.getTag() == Tag.FLOATING) || (element.getTag() == Tag.STRING)){//var <=> 10 
+                            value = element.getLexeme(); //pegar o valor e concatenar no content
+                            content += " " + value;
+                            //verificar se ela existe
+                        }if (element.getTag() == Tag.IS) { //var <=> 10 is int.. 
+                            element = iterator.next();
+                            type = element.getLexeme(); 
+                            tp = new TypeValue(type);
+                            var_table.put(var, tp);
+                            content =  type + " " + content;
+                            break;
+                        }else if ((element.getTag() == Tag.MINUS) || (element.getTag() == Tag.PLUS) || (element.getTag() == Tag.MULTIPLY) || (element.getTag() == Tag.DIVISION)){ //+ - etc
+                            value = element.getLexeme();
+                            content += " " + value; 
+
+                        }
+                    }
+                    content = "    " + content;
+                    content += ";\n";
+                    
+                }
             
             writer.write(content);
             
@@ -800,6 +901,10 @@ public class Lexer {
         // Retorna operadores com mais de um caractere: >=, <=, == e !=
         if (peek == '<' || peek == '>' || peek == '&' || peek == '|' || peek == '!')
             readOperators();
+
+        if (peek == '+' || peek == '-' || peek == '/' || peek == '*') {
+            readMath();
+        }    
 
         if (peek == '(' || peek == ')' || peek == ':') {
             readParentheses();
