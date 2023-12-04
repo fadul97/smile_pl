@@ -7,6 +7,9 @@ int main(int argc, char* argv[]){
     else if (_var >= a )
     {
     }
+    else
+    {
+    }
     for (int a = 0; a <= 100; a++) {
     }
     for (int b = 10; b >= 0; b--) {

@@ -498,12 +498,57 @@ public class Lexer {
                 wrElif(iterator);
             }
 
+            if (element.getTag() == Tag.IFNOT) {
+                wrIfnot(iterator);
+            }
+
             if(element.getTag() == Tag.END){
                 wrTheEnd();
             }
         }
 
         //wrAttribution("var", "int", Optional.of("2"));
+    }
+
+    private void wrIfnot(Iterator<Token> iterator) throws IOException {
+        try {
+            String cont = "    else";
+            writer.write(cont);
+
+            String test = new String();
+
+            element = iterator.next();  // Ja foi escrito o else
+            while (element.getTag() != Tag.LEFT_SMILE) {
+                if (element.getTag() == Tag.NOT) {
+                    element = iterator.next();
+                    writer.write("!" + element.getLexeme() + " ");
+                    test = test.concat("!" + element.getLexeme() + " ");
+                    // Ignora proximo !
+                    element = iterator.next();
+                } else if (element.getTag() == Tag.THEN) {
+                    // Ignora 'then'
+                    element = iterator.next();
+                    // Ignora '(:' e sai do loop
+                    element = iterator.next();
+                    break;
+                } else {
+                    cont = element.getLexeme();
+                    test = test.concat(cont + " ");
+                    writer.write(cont + " ");
+                }
+
+                element = iterator.next();
+                System.out.println("Agora no: " + element.getLexeme());
+            }
+
+            writer.write("\n    {\n");
+
+            // TODO: Ler expressoes dentro do else
+
+            writer.write("    }\n");
+        }  catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     private void wrElif(Iterator<Token> iterator) throws IOException {
@@ -513,7 +558,7 @@ public class Lexer {
 
             String test = new String();
 
-            element = iterator.next();  // Ja foi escrito o if
+            element = iterator.next();  // Ja foi escrito o else if
             while (element.getTag() != Tag.LEFT_SMILE) {
                 if (element.getTag() == Tag.NOT) {
                     element = iterator.next();
@@ -539,7 +584,7 @@ public class Lexer {
 
             writer.write(")\n    {\n");
 
-            // TODO: Ler expressoes dentro do if
+            // TODO: Ler expressoes dentro do else if
 
             writer.write("    }\n");
         }  catch (Exception e) {
