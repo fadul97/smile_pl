@@ -6,7 +6,7 @@ import org.example.tokens.Token;
 public class TypeValue {
     private Token token;
     private String value;
-    private String type;
+    private Tag type;
     private String var;
 
     public String getVar() {
@@ -17,7 +17,7 @@ public class TypeValue {
         this.var = var;
     }
 
-    public TypeValue(String type, String var) {
+    public TypeValue(Tag type, String var) {
         this.type = type;
         this.value = null;
         this.var = var;
@@ -36,7 +36,7 @@ public class TypeValue {
     }
 
     public Tag getType() {
-        return this.token.getTag();
+        return type;
     }
 
     public String getLexeme() {

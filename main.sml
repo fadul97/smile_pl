@@ -1,18 +1,21 @@
 TheBeginning
     var <=> 10 is int..
-    var <=> a + 10..
-    _var is string..
+    a <=> var + 10 is int..
+    _var <=> "Hello, World!" is string..
 
-    if var <= _var then (:
-    :) elif _var >= a then (:
+    if var < a then (:
+    :) elif var > a then (:
     :) ifnot (:
-    :)  
+    :)
 
     write("oi")
-    
-    write("oi {   _var    }")
+
+    write({var})
+    write({a})
+    write({_var})
 
     read(var)
+    read(_var)
 
     for 0...100 go (:
     :)

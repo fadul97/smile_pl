@@ -5,6 +5,7 @@ import org.example.tokens.Token;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,7 @@ public class Lexer {
         token_table.put("TheEnd", new Token(Tag.END, "TheEnd"));
         token_table.put("true", new Token(Tag.TRUE, "true"));
         token_table.put("false", new Token(Tag.FALSE, "false"));
-        token_table.put("int", new Token(Tag.TYPE, "int"));
+        token_table.put("int", new Token(Tag.INTEGER, "int"));
         token_table.put("float", new Token(Tag.FLOATING, "float"));
         token_table.put("string", new Token(Tag.STRING, "string"));
         token_table.put("for", new Token(Tag.FOR, "for"));
@@ -602,36 +603,59 @@ public class Lexer {
                     str = true;
                 } else {
                     writer.write("\"");
-                    System.out.println("Nao eh uma string : " + element.getLexeme());
-                    v = v.concat(element.getLexeme());
-                    System.out.println("V atual: " + v);
+//                    System.out.println("Nao eh uma string : " + element.getLexeme());
+//                    v = v.concat(element.getLexeme());
+//                    System.out.println("V atual: " + v);
                 }
             }
 
             if (str) {
                 writer.write(v + ");\n");
+                System.out.println("Escrevi v no printf: " + v);
             } else {
                 // Nao eh uma string
                 if (element.getTag() == Tag.VAR) {
                     String varName = element.getLexeme();
-                    TypeValue t = new TypeValue();
+                    TypeValue t = null;
+                    System.out.println("\n\nProcurando " + varName + " na lista!");
                     for (TypeValue elemento : varList) {
-                        t = elemento.buscarElementoPorVar(varName);
-                        if (t != null) {
-                            break; // Se encontrou, pode sair do loop
+                        if (elemento.getVar().equals(varName)) {
+                            System.out.println("Achei na lista! " + varName);
+                            t = elemento;
+                            break;
                         }
                     }
-                    System.out.println("Eh uma var. Nao achou t na var_table" +
-                            "Var: " + element.toString());
+
+                    System.out.println("T eh nulo? " + t);
                     if (t != null) {
                         // TODO: Escrever variavel no printf
-                        System.out.println("Tipo da variavel: " + t.getType());
+//                        System.out.println("Tipo da variavel: " + t.getType());
+                        Tag novaTag = t.getType();
+                        System.out.println("PRINTANDO AQUI" + novaTag.toString());
+
+
+                        switch (t.getType()) {
+                            case FLOATING:
+                                v = v.concat("%f\", " + t.getVar());
+                                break;
+                            case INTEGER:
+                                v = v.concat("%d\", " + t.getVar());
+                                break;
+                            case STRING:
+                                v = v.concat("%s\", " + t.getVar());
+                                break;
+                            default:
+                                // nao faz nada
+                                System.out.println("[ERROR]: NAO FIZ NADA");
+                                break;
+                        }
+                        
                     } else {
                         System.out.println("TypeValue eh null");
                     }
                 }
 
-                writer.write(v + "\");\n");
+                writer.write(v + ");\n");
             }
 
 
@@ -651,20 +675,36 @@ public class Lexer {
             element = iterator.next();
             System.out.println("Encontrei depois de '(': " + element.toString());
 
-            switch (element.getTag()) {
-                case INTEGER:
-                    cont = cont.concat("%d\", &" + element.getLexeme());
-                    break;
-                case FLOATING:
-                    cont = cont.concat("%f\", &" + element.getLexeme());
-                    break;
-                case STRING:
-                    cont = cont.concat("%s\", &" + element.getLexeme());
-                    break;
-                default:
-                    System.out.println("Unknown type");
-                    cont = cont.concat("UNKNOWN\", &" + element.getLexeme());
-                    break;
+            String v = new String("");
+            if (element.getTag() == Tag.VAR) {
+                String varName = element.getLexeme();
+                TypeValue t = null;
+                System.out.println("\n\nProcurando " + varName + " na lista!");
+                for (TypeValue elemento : varList) {
+                    if (elemento.getVar().equals(varName)) {
+                        System.out.println("Achei na lista! " + varName);
+                        t = elemento;
+                        break;
+                    }
+                }
+
+                if (t != null) {
+                    switch (t.getType()) {
+                        case INTEGER:
+                            cont = cont.concat("%d\", &" + element.getLexeme());
+                            break;
+                        case FLOATING:
+                            cont = cont.concat("%f\", &" + element.getLexeme());
+                            break;
+                        case STRING:
+                            cont = cont.concat("%s\", " + element.getLexeme());
+                            break;
+                        default:
+                            System.out.println("Unknown type");
+                            cont = cont.concat("UNKNOWN\", &" + element.getLexeme());
+                            break;
+                    }
+                }
             }
 
             writer.write(cont);
@@ -922,7 +962,7 @@ public class Lexer {
                     if (type == "string") {
                         type = "char*";
                     }
-                    tp = new TypeValue(type, var);
+                    tp = new TypeValue(element.getTag(), var);
                     varList.add(tp);
                     
                     content = "    " + type + " " + var + ";\n"; //ESTA PRONTO
@@ -958,7 +998,7 @@ public class Lexer {
                             if (type == "string") {
                                 type = "char*";
                             }
-                            tp = new TypeValue(type,var);
+                            tp = new TypeValue(element.getTag(), var);
                             varList.add(tp);
                             content =  type + " " + content;
                             break;
