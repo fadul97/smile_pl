@@ -3,6 +3,7 @@
 int main(int argc, char* argv[]){
     int var = 10;
     var = a + 10;
+    char* _var;
     if (var <= _var )
     {
     }
@@ -13,8 +14,7 @@ int main(int argc, char* argv[]){
     {
     }
     printf("oi");
-    printf("_var");
-    for (int a = 0; a <= 100; a++) {
+    printf("    for (int a = 0; a <= 100; a++) {
     }
     for (int b = 10; b >= 0; b--) {
     }

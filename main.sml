@@ -1,6 +1,7 @@
 TheBeginning
     var <=> 10 is int..
     var <=> a + 10..
+    _var is string..
 
     if var <= _var then (:
     :) elif _var >= a then (:

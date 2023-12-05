@@ -18,7 +18,7 @@ public class Lexer {
     private int line;
     private char peek;
     private HashMap<String, Token> token_table;
-    private HashMap<String, TypeValue> var_table;
+    public List<TypeValue> varList = new ArrayList<>();
     private File mainFile;
     private BufferedReader reader;
     private Token token;
@@ -36,7 +36,6 @@ public class Lexer {
         line = 1;
         peek = ' ';
         token_table = new HashMap<>();
-        var_table = new HashMap<>();
         dotsBuilder = new StringBuilder();
         stringBuilder = new StringBuilder();
         word = new StringBuilder();
@@ -46,6 +45,8 @@ public class Lexer {
         token_table.put("true", new Token(Tag.TRUE, "true"));
         token_table.put("false", new Token(Tag.FALSE, "false"));
         token_table.put("int", new Token(Tag.TYPE, "int"));
+        token_table.put("float", new Token(Tag.FLOATING, "float"));
+        token_table.put("string", new Token(Tag.STRING, "string"));
         token_table.put("for", new Token(Tag.FOR, "for"));
         token_table.put("go", new Token(Tag.GO, "go"));
         token_table.put("while", new Token(Tag.WHILE, "while"));
@@ -91,9 +92,7 @@ public class Lexer {
                 scan((char) character);
 //                seqTokens.add(token);
             }
-            for (String key : var_table.keySet()) {
-                System.out.println("Key: " + key);
-            }
+            
             System.out.println("\n\n");
             writer = new BufferedWriter(new FileWriter(outPath));
 
@@ -566,8 +565,11 @@ public class Lexer {
                 wrTheEnd();
             }
         }
+        
+        for (TypeValue elemento : varList) {
+            System.out.println(elemento.toString());
+        }
 
-        //wrAttribution("var", "int", Optional.of("2"));
     }
 
     private void wrWrite(Iterator<Token> iterator) throws IOException{
@@ -600,7 +602,14 @@ public class Lexer {
             } else {
                 // Nao eh uma string
                 if (element.getTag() == Tag.VAR) {
-                    TypeValue t = var_table.get(element.getLexeme());
+                    String varName = element.getLexeme();
+                    TypeValue t = new TypeValue();
+                    for (TypeValue elemento : varList) {
+                        t = elemento.buscarElementoPorVar(varName);
+                        if (t != null) {
+                            break; // Se encontrou, pode sair do loop
+                        }
+                    }
                     System.out.println("Eh uma var. Nao achou t na var_table" +
                             "Var: " + element.toString());
                     if (t != null) {
@@ -883,8 +892,11 @@ public class Lexer {
                 if (element.getTag() == Tag.IS) {//var is int..
                     element = iterator.next();
                     type = element.getLexeme();
-                    tp = new TypeValue(type);
-                    var_table.put(var, tp);
+                    if (type == "string") {
+                        type = "char*";
+                    }
+                    tp = new TypeValue(type, var);
+                    varList.add(tp);
                     
                     content = "    " + type + " " + var + ";\n"; //ESTA PRONTO
                     
@@ -916,8 +928,11 @@ public class Lexer {
                         }if (element.getTag() == Tag.IS) { //var <=> 10 is int.. 
                             element = iterator.next();
                             type = element.getLexeme();
-                            tp = new TypeValue(type);
-                            var_table.put(var, tp);
+                            if (type == "string") {
+                                type = "char*";
+                            }
+                            tp = new TypeValue(type,var);
+                            varList.add(tp);
                             content =  type + " " + content;
                             break;
                         }else if ((element.getTag() == Tag.MINUS) || (element.getTag() == Tag.PLUS) || (element.getTag() == Tag.MULTIPLY) || (element.getTag() == Tag.DIVISION)){ //+ - etc
