@@ -875,27 +875,15 @@ public class Lexer {
             //var <=> 10 is int..
             //var <=> 3 / var..
             String var = element.getLexeme();
-            Tag type;
+            String type;
             String value;
             TypeValue tp; 
                 
                 element = iterator.next();
                 if (element.getTag() == Tag.IS) {//var is int..
                     element = iterator.next();
-                    type = element.getTag();
-                    switch (type) {
-                        case FLOATING:
-                            tp = new TypeValue(type, element.getLexeme(), "0.0f");
-                            break;
-                        case INTEGER:
-                            tp = new TypeValue(type, element.getLexeme(), "0");
-                            break;
-                        case STRING:
-                            tp = new TypeValue(type, element.getLexeme(), "");
-                            break;
-                        default:
-                            tp = new TypeValue(type, element.getLexeme(), "NULL");
-                    }
+                    type = element.getLexeme();
+                    tp = new TypeValue(type);
                     var_table.put(var, tp);
                     
                     content = "    " + type + " " + var + ";\n"; //ESTA PRONTO
@@ -927,20 +915,8 @@ public class Lexer {
                             //verificar se ela existe
                         }if (element.getTag() == Tag.IS) { //var <=> 10 is int.. 
                             element = iterator.next();
-                            type = element.getTag();
-                            switch (type) {
-                                case FLOATING:
-                                    tp = new TypeValue(type, element.getLexeme(), "0.0f");
-                                    break;
-                                case INTEGER:
-                                    tp = new TypeValue(type, element.getLexeme(), "0");
-                                    break;
-                                case STRING:
-                                    tp = new TypeValue(type, element.getLexeme(), "");
-                                    break;
-                                default:
-                                    tp = new TypeValue(type, element.getLexeme(), "NULL");
-                            }
+                            type = element.getLexeme();
+                            tp = new TypeValue(type);
                             var_table.put(var, tp);
                             content =  type + " " + content;
                             break;

@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 int main(int argc, char* argv[]){
-    TYPE var = 10;
+    int var = 10;
     var = a + 10;
     if (var <= _var )
     {

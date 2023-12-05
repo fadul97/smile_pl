@@ -6,6 +6,12 @@ import org.example.tokens.Token;
 public class TypeValue {
     private Token token;
     private String value;
+    private String type;
+
+    public TypeValue(String type) {
+        this.type = type;
+        this.value = null;
+    }
 
     public TypeValue(Tag type, String lexeme, String value) {
         this.token = new Token(type, lexeme);
