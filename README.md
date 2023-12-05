@@ -45,21 +45,21 @@ final para fins de compilação.
 ### Exemplo
 Este é um exemplo básico para mostrar a estrutura geral de um programa Smile.
 
-TheBeginning
-var <=> 10 is int..
-var1 <=> "Hello, World!"..
-if var <= _var then (:
-:) elif _var >= a then (:
-:) ifnot (:
-:)
-write("oi")
-write("oi {_var}")
-for 0...100 go (:
-:)
-for 10...0 go (:
-:)
-while a && 10 || !b! && c (:
-:)
+TheBeginning <br>
+&nbsp;&nbsp;&nbsp;&nbsp;var <=> 10 is int.. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;var1 <=> "Hello, World!".. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;if var <= _var then (: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;:) elif _var >= a then (: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;:) ifnot (: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;:) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;write("oi") <br>
+&nbsp;&nbsp;&nbsp;&nbsp;write("oi {_var}") <br>
+&nbsp;&nbsp;&nbsp;&nbsp;for 0...100 go (: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;:) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;for 10...0 go (: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;:) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;while a && 10 || !b! && c (: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;:) <br>
 TheEnd
 
 ### Contato
