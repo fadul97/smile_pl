@@ -586,13 +586,13 @@ public class Lexer {
 
     private void wrWrite(Iterator<Token> iterator) throws IOException{
         try{
-            writer.write("    printf(");
+            String v = "    printf(";
+//            writer.write("    printf(");
 
             // Ignora '('
             element = iterator.next();
             System.out.println("Ignorando: " + element.toString());
 
-            String v = new String("");
 
             element = iterator.next();
 
@@ -647,15 +647,15 @@ public class Lexer {
                         switch (t.getType()) {
                             case FLOATING:
                                 v = v.substring(0, 0);
-                                v = v.concat("\"%f\", " + t.getVar());
+                                v = v.concat("    printf(\"%f\", " + t.getVar());
                                 break;
                             case INTEGER:
                                 v = v.substring(0, 0);
-                                v = v.concat("\"%d\", " + t.getVar());
+                                v = v.concat("    printf(\"%d\", " + t.getVar());
                                 break;
                             case STRING:
                                 v = v.substring(0, 0);
-                                v = v.concat("\"%s\", " + t.getVar());
+                                v = v.concat("    printf(\"%s\", " + t.getVar());
                                 break;
                             default:
                                 // nao faz nada
@@ -675,7 +675,25 @@ public class Lexer {
 //                    v = v.concat("\"");
 //                }
 
-                writer.write(v + ");\n");
+                if (v.contains("v_cc")) {
+                    v = v.replace("v_cc", "");
+                }
+
+                if (v.contains("v_")) {
+                    v = v.replace("v_", "");
+                }
+
+                if (v.contains("{")) {
+                    v = v.replace("{", "");
+                }
+
+                if (!v.equals("    printf(")) {
+                    System.out.println("V = " + v);
+                    writer.write(v + ");\n");
+                } else {
+                    System.out.println("V = " + v);
+                }
+
             }
 
 
@@ -852,6 +870,24 @@ public class Lexer {
             writer.write(")\n    {\n");
 
             // TODO: Ler expressoes dentro do if
+            while (element.getTag() != Tag.RIGHT_SMILE) {
+                if (element.getTag() == Tag.VAR) {
+                    writer.write("    ");
+                    wrAttribution(element, iterator);
+                }
+
+                if (element.getTag() == Tag.WRITE) {
+                    writer.write("    ");
+                    wrWrite(iterator);
+                }
+
+                if (element.getTag() == Tag.READ) {
+                    writer.write("    ");
+                    wrRead(iterator);
+                }
+
+                element = iterator.next();
+            }
 
             writer.write("    }\n");
         }  catch (Exception e) {
@@ -888,6 +924,24 @@ public class Lexer {
             writer.write(")\n    {\n");
 
             // TODO: Ler expressoes dentro do while
+            while (element.getTag() != Tag.RIGHT_SMILE) {
+                if (element.getTag() == Tag.VAR) {
+                    writer.write("    ");
+                    wrAttribution(element, iterator);
+                }
+
+                if (element.getTag() == Tag.WRITE) {
+                    writer.write("    ");
+                    wrWrite(iterator);
+                }
+
+                if (element.getTag() == Tag.READ) {
+                    writer.write("    ");
+                    wrRead(iterator);
+                }
+
+                element = iterator.next();
+            }
 
             writer.write("    }\n");
 

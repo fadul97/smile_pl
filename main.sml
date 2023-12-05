@@ -1,10 +1,14 @@
 TheBeginning
     var <=> 10 is int..
-    a <=> var + 10 is int..
+    x <=> var + 10 is int..
     _var <=> "Hello, World!\n" is string..
 
-    if var < a then (:
-    :) elif var > a then (:
+    if var < x then (:
+        b <=> 5 is int..
+        write("Valor para b: ")
+        read(b)
+        write({_var})
+    :) elif var > x then (:
     :) ifnot (:
     :)
 
@@ -12,13 +16,10 @@ TheBeginning
     write("oi\n")
 
     write({var})
-    write("\n")
-    write({a})
+    write("\nx = ")
+    write({x})
     write("\n")
     write({_var})
-
-    read(var)
-    read(_var)
 
     for 0...100 go (:
     :)
@@ -26,6 +27,16 @@ TheBeginning
     for 10...0 go (:
     :)
 
-    while a (:
+    while x > 10(:
+        write({_var})
+        x <=> x - 5..
     :)
+
+    write("\nx = ")
+    write({x})
+    write("\n")
+    write("Valor para var: ")
+    read({var})
+    write("\n")
+
 TheEnd
