@@ -916,14 +916,43 @@ public class Lexer {
             element = iterator.next();
 //            System.out.println("Dentro da funcao: " + element.toString());
             // TODO: Escrever expressoes dentro do loop
-//            while (e.getTag() != Tag.RIGHT_SMILE) {
-//                // Escrever expressoes
-//                if (e.getTag() == Tag.FOR) {
-//
+//            while (element.getTag() != Tag.RIGHT_SMILE) {
+////                // Escrever expressoes
+//                if (element.getTag() == Tag.VAR) {
+//                    wrAttribution(element, iterator);
 //                }
 //
+//                if (element.getTag() == Tag.FOR) {
+//                    wrForLoop(iterator);
+////                System.out.println("Fora da funcao: " + element.toString());
+//                }
 //
-//                e = iterator.next();
+//                if (element.getTag() == Tag.WHILE) {
+//                    wrWhileLoop(iterator);
+//                }
+//
+//                if (element.getTag() == Tag.IF) {
+//                    wrIf(iterator);
+//                }
+//
+//                if (element.getTag() == Tag.ELIF) {
+//                    wrElif(iterator);
+//                }
+//
+//                if (element.getTag() == Tag.IFNOT) {
+//                    wrIfnot(iterator);
+//                }
+//
+//                if (element.getTag() == Tag.WRITE) {
+//                    wrWrite(iterator);
+//                }
+//
+//                if (element.getTag() == Tag.READ) {
+//                    wrRead(iterator);
+//                }
+////
+////
+//                element = iterator.next();
 //            }
 
             writer.write("    }\n");
