@@ -65,6 +65,8 @@ public class Lexer {
         token_table.put("+", new Token(Tag.PLUS, "+"));
         token_table.put("*", new Token(Tag.MULTIPLY, "*"));
         token_table.put("/", new Token(Tag.DIVISION, "/"));
+        token_table.put("(", new Token(Tag.LEFT_PAR, "("));
+        token_table.put(")", new Token(Tag.RIGHT_PAR, ")"));
 
         // TODO: Adicionar keywords
 
@@ -367,7 +369,7 @@ public class Lexer {
         char last = peek;
         switch (peek) {
             case '(':
-            peek = (char) reader.read();
+                peek = (char) reader.read();
                 if (peek != ':') {
                     token = token_table.get("(");
                     if (token == null) {
@@ -406,6 +408,13 @@ public class Lexer {
                     if (token == null) {
                         token = new Token(Tag.RIGHT_SMILE, ":)");
                     }
+                    System.out.println(token.toString());
+                    seqTokens.add(token);
+                    return token;
+                }
+            case ')':
+                token = token_table.get(")");
+                if (token != null) {
                     System.out.println(token.toString());
                     seqTokens.add(token);
                     return token;
@@ -520,6 +529,8 @@ public class Lexer {
             System.out.println(t.toString());
         }
 
+        System.out.println("Acabou de printar a traducao");
+
         Iterator<Token> iterator = seqTokens.iterator();
         while (iterator.hasNext()){
 
@@ -629,11 +640,27 @@ public class Lexer {
             element = iterator.next();
 
             element = iterator.next();
-            cont = cont.concat(element.getLexeme());
+            System.out.println("Encontrei depois de '(': " + element.toString());
+
+            switch (element.getTag()) {
+                case INTEGER:
+                    cont = cont.concat("%d\", &" + element.getLexeme());
+                    break;
+                case FLOATING:
+                    cont = cont.concat("%f\", &" + element.getLexeme());
+                    break;
+                case STRING:
+                    cont = cont.concat("%s\", &" + element.getLexeme());
+                    break;
+                default:
+                    System.out.println("Unknown type");
+                    cont = cont.concat("UNKNOWN\", &" + element.getLexeme());
+                    break;
+            }
 
             writer.write(cont);
 
-            writer.write("\");\n");
+            writer.write(");\n");
 
         } catch (Exception e) {
             // TODO: handle exception
@@ -932,14 +959,11 @@ public class Lexer {
                 }
             
             writer.write(content);
-            
+
         } catch (IOException e) {
             // TODO: handle exception        
         }
     }
-
-    //TODO: Criar wrWrite
-    // ...
 
     private void wrTheEnd() throws IOException{
 
@@ -986,6 +1010,11 @@ public class Lexer {
 
         if (peek == '(' || peek == ')' || peek == ':') {
             readParentheses();
+        }
+
+        // Retorna palavras-chave e identificadores
+        if (Character.isAlphabetic(peek) || peek == '_') {
+            readWords();
         }
 
         // Retorna string

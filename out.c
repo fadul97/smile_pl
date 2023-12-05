@@ -14,6 +14,7 @@ int main(int argc, char* argv[]){
     }
     printf("oi");
     printf("_var");
+    scanf("UNKNOWN", &var);
     for (int a = 0; a <= 100; a++) {
     }
     for (int b = 10; b >= 0; b--) {
