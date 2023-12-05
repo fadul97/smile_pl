@@ -596,13 +596,23 @@ public class Lexer {
 
             element = iterator.next();
 
+            String a = "\n";
+            System.out.println("Tamanho de a: " + a.length());
+            System.out.println("a: ");
+
             boolean str = false;
             if (element.getLexeme().length() > 0) {
                 if (element.getLexeme().charAt(0) == '"') {
                     v = v.concat(element.getLexeme());
                     str = true;
                 } else {
-                    writer.write("\"");
+                    if (element.getLexeme().charAt(0) == '{' && element.getLexeme().length() > 1) {
+                        v = v.concat(element.getLexeme().substring(1, element.getLexeme().length()));
+                    }
+                    System.out.println("Lexeme: " + element.getLexeme());
+                    System.out.println("Posicao 0: " + element.getLexeme().charAt(0));
+//                    v = v.concat("\"");
+//                    writer.write("\"");
 //                    System.out.println("Nao eh uma string : " + element.getLexeme());
 //                    v = v.concat(element.getLexeme());
 //                    System.out.println("V atual: " + v);
@@ -636,13 +646,16 @@ public class Lexer {
 
                         switch (t.getType()) {
                             case FLOATING:
-                                v = v.concat("%f\", " + t.getVar());
+                                v = v.substring(0, 0);
+                                v = v.concat("\"%f\", " + t.getVar());
                                 break;
                             case INTEGER:
-                                v = v.concat("%d\", " + t.getVar());
+                                v = v.substring(0, 0);
+                                v = v.concat("\"%d\", " + t.getVar());
                                 break;
                             case STRING:
-                                v = v.concat("%s\", " + t.getVar());
+                                v = v.substring(0, 0);
+                                v = v.concat("\"%s\", " + t.getVar());
                                 break;
                             default:
                                 // nao faz nada
@@ -654,6 +667,13 @@ public class Lexer {
                         System.out.println("TypeValue eh null");
                     }
                 }
+
+                System.out.println("V para escrever no printf: " + v);
+                System.out.println("Escrevendo \") no out.c");
+
+//                if (v.charAt(v.length()) != '"') {
+//                    v = v.concat("\"");
+//                }
 
                 writer.write(v + ");\n");
             }
