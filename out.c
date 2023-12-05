@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 int main(int argc, char* argv[]){
+    int a = 10;
     int var = 10;
     int x = var + 10;
     char* _var = "Hello, World!\n";
@@ -13,9 +14,16 @@ int main(int argc, char* argv[]){
     }
     else if (var >  x )
     {
+        if (var >  a )
+    {
+        var = 2;
+    }
     }
     else
     {
+        for (int a = 10; a >= 0; a--) {
+        var = 3;
+    }
     }
     printf("oi\n");
     printf("%d", var);
@@ -23,9 +31,11 @@ int main(int argc, char* argv[]){
     printf("%d", x);
     printf("\n");
     printf("%s", _var);
-    for (int a = 0; a <= 100; a++) {
+    for (int b = 0; b <= 100; b++) {
+        var = 3;
     }
-    for (int b = 10; b >= 0; b--) {
+    for (int c = 10; c >= 0; c--) {
+        var = 3;
     }
     while (x >  10 )
     {
@@ -38,5 +48,9 @@ int main(int argc, char* argv[]){
     printf("Valor para var: ");
     scanf("%d", &var);
     printf("\n");
+    while (a )
+    {
+        var = 3;
+    }
     return 0;
 }

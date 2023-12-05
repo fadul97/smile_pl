@@ -32,6 +32,7 @@ public class Lexer {
     private String content;
     private Token element;
     private static char forVar = 'a';
+    private Iterator<Token> iterator;
 
     public Lexer() {
         line = 1;
@@ -98,6 +99,7 @@ public class Lexer {
             
             System.out.println("\n\n");
             writer = new BufferedWriter(new FileWriter(outPath));
+            iterator = seqTokens.iterator();
 
         } catch (FileNotFoundException e) {
             System.out.println("Arquivo nao encontrado.");
@@ -521,6 +523,58 @@ public class Lexer {
         return token;
     }
     
+    public void Interntranslate(Token element) throws IOException{
+        
+        System.out.println("elemento: " + element.toString());
+        
+        while (element.getTag() != Tag.RIGHT_SMILE){
+
+            //TODO: Fazer a verificação dos tokens
+            if (element.getTag() == Tag.VAR) {
+                writer.write("    ");
+                wrAttribution(element, iterator);
+            }
+
+            if (element.getTag() == Tag.FOR) {
+                writer.write("    ");
+                wrForLoop(iterator);
+//                System.out.println("Fora da funcao: " + element.toString());
+            }
+
+            if (element.getTag() == Tag.WHILE) {
+                writer.write("    ");
+                wrWhileLoop(iterator);
+            }
+
+            if (element.getTag() == Tag.IF) {
+                writer.write("    ");
+                wrIf(iterator);
+            }
+
+            if (element.getTag() == Tag.ELIF) {
+                writer.write("    ");
+                wrElif(iterator);
+            }
+
+            if (element.getTag() == Tag.IFNOT) {
+                writer.write("    ");
+                wrIfnot(iterator);
+            }
+
+            if (element.getTag() == Tag.WRITE) {
+                writer.write("    ");
+                wrWrite(iterator);
+            }
+
+            if (element.getTag() == Tag.READ) {
+                writer.write("    ");
+                wrRead(iterator);
+            }
+            
+            element = iterator.next();
+        }
+    }
+
     public void translate() throws IOException{
         //TODO: Fazer leitura dos tokens na lista "seqTokens" e redirecionar para cada função
         // DEBUG
@@ -531,7 +585,7 @@ public class Lexer {
 
         System.out.println("Acabou de printar a traducao");
 
-        Iterator<Token> iterator = seqTokens.iterator();
+        
         while (iterator.hasNext()){
 
             element = iterator.next();
@@ -787,7 +841,7 @@ public class Lexer {
 
             writer.write("\n    {\n");
 
-            // TODO: Ler expressoes dentro do else
+            Interntranslate(element);
 
             writer.write("    }\n");
         }  catch (Exception e) {
@@ -828,7 +882,7 @@ public class Lexer {
 
             writer.write(")\n    {\n");
 
-            // TODO: Ler expressoes dentro do else if
+            Interntranslate(element);
 
             writer.write("    }\n");
         }  catch (Exception e) {
@@ -888,6 +942,7 @@ public class Lexer {
 
                 element = iterator.next();
             }
+            Interntranslate(element);
 
             writer.write("    }\n");
         }  catch (Exception e) {
@@ -942,6 +997,7 @@ public class Lexer {
 
                 element = iterator.next();
             }
+            Interntranslate(element);
 
             writer.write("    }\n");
 
@@ -988,47 +1044,7 @@ public class Lexer {
             writer.write(content);
 
             element = iterator.next();
-//            System.out.println("Dentro da funcao: " + element.toString());
-            // TODO: Escrever expressoes dentro do loop
-//            while (element.getTag() != Tag.RIGHT_SMILE) {
-////                // Escrever expressoes
-//                if (element.getTag() == Tag.VAR) {
-//                    wrAttribution(element, iterator);
-//                }
-//
-//                if (element.getTag() == Tag.FOR) {
-//                    wrForLoop(iterator);
-////                System.out.println("Fora da funcao: " + element.toString());
-//                }
-//
-//                if (element.getTag() == Tag.WHILE) {
-//                    wrWhileLoop(iterator);
-//                }
-//
-//                if (element.getTag() == Tag.IF) {
-//                    wrIf(iterator);
-//                }
-//
-//                if (element.getTag() == Tag.ELIF) {
-//                    wrElif(iterator);
-//                }
-//
-//                if (element.getTag() == Tag.IFNOT) {
-//                    wrIfnot(iterator);
-//                }
-//
-//                if (element.getTag() == Tag.WRITE) {
-//                    wrWrite(iterator);
-//                }
-//
-//                if (element.getTag() == Tag.READ) {
-//                    wrRead(iterator);
-//                }
-////
-////
-//                element = iterator.next();
-//            }
-
+            Interntranslate(element);
             writer.write("    }\n");
 
         } catch (Exception e) {
