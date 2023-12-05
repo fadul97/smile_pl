@@ -12,6 +12,8 @@ TheBeginning
     
     write("oi {   _var    }")
 
+    read(var)
+
     for 0...100 go (:
     :)
 
