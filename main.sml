@@ -49,8 +49,10 @@ TheBeginning
     read({var})
     write("\n")
 
-    while a (:
+    while a > 0 (:
         var <=> 3..
+
+        a <=> a - 5..
     :)
     
 TheEnd

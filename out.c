@@ -48,9 +48,10 @@ int main(int argc, char* argv[]){
     printf("Valor para var: ");
     scanf("%d", &var);
     printf("\n");
-    while (a )
+    while (a >  0 )
     {
         var = 3;
+        a = a - 5;
     }
     return 0;
 }

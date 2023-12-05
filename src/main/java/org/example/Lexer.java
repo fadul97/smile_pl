@@ -5,15 +5,10 @@ import org.example.tokens.Token;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 import java.util.Iterator;
-
-import java.util.Optional;
+import java.util.List;
 
 public class Lexer {
     private int line;
@@ -94,7 +89,6 @@ public class Lexer {
             int character;
             while ((character = reader.read()) != -1){
                 scan((char) character);
-//                seqTokens.add(token);
             }
             
             System.out.println("\n\n");
@@ -113,7 +107,7 @@ public class Lexer {
     
     private void ignoreWhiteSpace() throws IOException {
         if (peek == '\n')
-        line += 1;
+            line += 1;
         peek = (char) reader.read();
     }
     
@@ -132,7 +126,6 @@ public class Lexer {
                     decimal = true;
                 } else {
                     // Segundo ponto encontrado - Final da expressao, loop ou erro
-                    // System.out.println("[IMPORTANTE] Segundo ponto");
                     dotsBuilder.append(".");
                     token = token_table.get(number.toString());
                     if (token == null) {
@@ -147,7 +140,6 @@ public class Lexer {
                             return token;
                         }
                     }
-                    // peek = last;
                     System.out.println(token.toString());
                     return token;
                 }
@@ -380,9 +372,6 @@ public class Lexer {
                     System.out.println(token.toString());
                     seqTokens.add(token);
                     stringBuilder.append(peek);
-                    System.out.println("StringBuilder: " + stringBuilder.toString());
-
-//                    peek = last; // pega o ultimo valor para não perder o valor
                     return token;
                 } else {
                     token = token_table.get("(:");
@@ -464,8 +453,6 @@ public class Lexer {
     }
     
     private Token readString() throws IOException {
-//        StringBuilder string = new StringBuilder();
-
         // Adiciona " na string, se nao tiver sido adicionado
         if (stringBuilder.length() <= 0)
             stringBuilder.append(peek);
@@ -486,17 +473,13 @@ public class Lexer {
                 // Procurar na tabela de variaveis
                 Token t = token_table.get(token.getLexeme());
                 if (t != null) {
-                    System.out.println("Nao esta na tabela de variaveis.");
                 } else {
-                    System.out.println("Trocando variavel pelo seu valor.");
                     // TODO: Trocar
                 }
 
                 // Ignora espacos em branco
                 while (Character.isWhitespace(peek)) peek = (char) reader.read();
 
-//                System.out.println("Token encontrado: " + token.toString());
-//                System.out.println("Var encontrada: " + word.toString());
                 stringBuilder.append(token.getLexeme());
             } else if (peek == '}') {
                 // NADA
@@ -516,7 +499,6 @@ public class Lexer {
             token = new Token(Tag.STRING, stringBuilder.toString());
         }
 
-        System.out.println("stringBuilder antes do setLenght(0): " + stringBuilder.toString());
         stringBuilder.setLength(0);
         System.out.println(token.toString());
         seqTokens.add(token);
@@ -524,9 +506,6 @@ public class Lexer {
     }
     
     public void Interntranslate(Token element) throws IOException{
-        
-        System.out.println("elemento: " + element.toString());
-        
         while (element.getTag() != Tag.RIGHT_SMILE){
 
             //TODO: Fazer a verificação dos tokens
@@ -538,7 +517,6 @@ public class Lexer {
             if (element.getTag() == Tag.FOR) {
                 writer.write("    ");
                 wrForLoop(iterator);
-//                System.out.println("Fora da funcao: " + element.toString());
             }
 
             if (element.getTag() == Tag.WHILE) {
@@ -583,9 +561,6 @@ public class Lexer {
             System.out.println(t.toString());
         }
 
-        System.out.println("Acabou de printar a traducao");
-
-        
         while (iterator.hasNext()){
 
             element = iterator.next();
@@ -600,7 +575,6 @@ public class Lexer {
 
             if (element.getTag() == Tag.FOR) {
                 wrForLoop(iterator);
-//                System.out.println("Fora da funcao: " + element.toString());
             }
 
             if (element.getTag() == Tag.WHILE) {
@@ -631,28 +605,16 @@ public class Lexer {
                 wrTheEnd();
             }
         }
-        
-        for (TypeValue elemento : varList) {
-            System.out.println(elemento.toString());
-        }
-
     }
 
     private void wrWrite(Iterator<Token> iterator) throws IOException{
         try{
             String v = "    printf(";
-//            writer.write("    printf(");
 
             // Ignora '('
             element = iterator.next();
-            System.out.println("Ignorando: " + element.toString());
-
 
             element = iterator.next();
-
-            String a = "\n";
-            System.out.println("Tamanho de a: " + a.length());
-            System.out.println("a: ");
 
             boolean str = false;
             if (element.getLexeme().length() > 0) {
@@ -663,41 +625,24 @@ public class Lexer {
                     if (element.getLexeme().charAt(0) == '{' && element.getLexeme().length() > 1) {
                         v = v.concat(element.getLexeme().substring(1, element.getLexeme().length()));
                     }
-                    System.out.println("Lexeme: " + element.getLexeme());
-                    System.out.println("Posicao 0: " + element.getLexeme().charAt(0));
-//                    v = v.concat("\"");
-//                    writer.write("\"");
-//                    System.out.println("Nao eh uma string : " + element.getLexeme());
-//                    v = v.concat(element.getLexeme());
-//                    System.out.println("V atual: " + v);
                 }
             }
 
             if (str) {
                 writer.write(v + ");\n");
-                System.out.println("Escrevi v no printf: " + v);
             } else {
                 // Nao eh uma string
                 if (element.getTag() == Tag.VAR) {
                     String varName = element.getLexeme();
                     TypeValue t = null;
-                    System.out.println("\n\nProcurando " + varName + " na lista!");
                     for (TypeValue elemento : varList) {
                         if (elemento.getVar().equals(varName)) {
-                            System.out.println("Achei na lista! " + varName);
                             t = elemento;
                             break;
                         }
                     }
 
-                    System.out.println("T eh nulo? " + t);
                     if (t != null) {
-                        // TODO: Escrever variavel no printf
-//                        System.out.println("Tipo da variavel: " + t.getType());
-                        Tag novaTag = t.getType();
-                        System.out.println("PRINTANDO AQUI" + novaTag.toString());
-
-
                         switch (t.getType()) {
                             case FLOATING:
                                 v = v.substring(0, 0);
@@ -713,21 +658,12 @@ public class Lexer {
                                 break;
                             default:
                                 // nao faz nada
-                                System.out.println("[ERROR]: NAO FIZ NADA");
                                 break;
                         }
                         
                     } else {
-                        System.out.println("TypeValue eh null");
                     }
                 }
-
-                System.out.println("V para escrever no printf: " + v);
-                System.out.println("Escrevendo \") no out.c");
-
-//                if (v.charAt(v.length()) != '"') {
-//                    v = v.concat("\"");
-//                }
 
                 if (v.contains("v_cc")) {
                     v = v.replace("v_cc", "");
@@ -742,15 +678,10 @@ public class Lexer {
                 }
 
                 if (!v.equals("    printf(")) {
-                    System.out.println("V = " + v);
                     writer.write(v + ");\n");
-                } else {
-                    System.out.println("V = " + v);
                 }
 
             }
-
-
         } catch (Exception e) {
             //  TODO: handle exception
         }
@@ -765,16 +696,13 @@ public class Lexer {
             element = iterator.next();
 
             element = iterator.next();
-            System.out.println("Encontrei depois de '(': " + element.toString());
 
             String v = new String("");
             if (element.getTag() == Tag.VAR) {
                 String varName = element.getLexeme();
                 TypeValue t = null;
-                System.out.println("\n\nProcurando " + varName + " na lista!");
                 for (TypeValue elemento : varList) {
                     if (elemento.getVar().equals(varName)) {
-                        System.out.println("Achei na lista! " + varName);
                         t = elemento;
                         break;
                     }
@@ -792,7 +720,6 @@ public class Lexer {
                             cont = cont.concat("%s\", " + element.getLexeme());
                             break;
                         default:
-                            System.out.println("Unknown type");
                             cont = cont.concat("UNKNOWN\", &" + element.getLexeme());
                             break;
                     }
@@ -836,7 +763,6 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write("\n    {\n");
@@ -877,7 +803,6 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write(")\n    {\n");
@@ -918,7 +843,6 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write(")\n    {\n");
@@ -973,7 +897,6 @@ public class Lexer {
                 }
 
                 element = iterator.next();
-//                System.out.println("Agora no: " + element.getLexeme());
             }
 
             writer.write(")\n    {\n");
@@ -1000,8 +923,6 @@ public class Lexer {
             Interntranslate(element);
 
             writer.write("    }\n");
-
-
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -1016,7 +937,6 @@ public class Lexer {
             // Pega primeiro parametro
             element = iterator.next();
             String primParam = element.getLexeme();
-//            System.out.println("Primeiro param: " + primParam);
 
             // Ignora reticencias
             element = iterator.next();
@@ -1024,13 +944,10 @@ public class Lexer {
             // Pega segundo parametro
             element = iterator.next();
             String segParam = element.getLexeme();
-//            System.out.println("Segundo param: " + segParam);
 
             boolean increment = true;
             if (isFirstGreater(Integer.parseInt(primParam), Integer.parseInt(segParam))) {
                 increment = false;
-//                    System.out.println("Primeiro eh maior que segundo, trocando valores e decrementar" + increment);
-//                    System.out.println(primParam + " e " + segParam);
             }
 
             if (increment) {
@@ -1097,15 +1014,6 @@ public class Lexer {
                         if (element.getTag() == Tag.VAR){ 
                             String varName = element.getLexeme();
                             content += " " + varName;
-
-                            // for (HashMap.Entry<String, TypeValue> entry : var_table.entrySet()) {
-                            //     String varName2 = entry.getKey();
-                            //     if(varName2 == varName){//existe var na var_table
-                            //         TypeValue tp2 = entry.getValue();
-                            //         //fazer verificacao de tipos e pegar o valor da variavel
-                            //     }
-                            // }
-
                         }
                         if((element.getTag() == Tag.INTEGER) || (element.getTag() == Tag.FLOATING) || (element.getTag() == Tag.STRING)){//var <=> 10 
                             value = element.getLexeme(); //pegar o valor e concatenar no content
